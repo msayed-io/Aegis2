@@ -1,0 +1,177 @@
+package com.example.viewmodel
+
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.crypto.TotpGenerator
+import com.example.model.AegisAccount
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+sealed class AegisScreen {
+    object Main : AegisScreen()
+    object Lock : AegisScreen()
+    data class CodeDetail(val accountId: String) : AegisScreen()
+    object Search : AegisScreen()
+    object EmptyState : AegisScreen()
+    object QrScanner : AegisScreen()
+    object ManualEntry : AegisScreen()
+    object Settings : AegisScreen()
+    object BackupSync : AegisScreen()
+    object Welcome : AegisScreen()
+    object TotpExplanation : AegisScreen()
+    object AddFirstCode : AegisScreen()
+}
+
+class AegisViewModel : ViewModel() {
+
+    private val initialAccounts = listOf<AegisAccount>()
+
+    private val _accounts = MutableStateFlow<List<AegisAccount>>(initialAccounts)
+    val accounts: StateFlow<List<AegisAccount>> = _accounts.asStateFlow()
+
+    private val _currentScreen = MutableStateFlow<AegisScreen>(AegisScreen.Main)
+    val currentScreen: StateFlow<AegisScreen> = _currentScreen.asStateFlow()
+
+    private val _isAddSheetVisible = MutableStateFlow(false)
+    val isAddSheetVisible: StateFlow<Boolean> = _isAddSheetVisible.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _currentTimeSeconds = MutableStateFlow(System.currentTimeMillis() / 1000L)
+    val currentTimeSeconds: StateFlow<Long> = _currentTimeSeconds.asStateFlow()
+
+    // Settings
+    private val _faceIdEnabled = MutableStateFlow(true)
+    val faceIdEnabled: StateFlow<Boolean> = _faceIdEnabled.asStateFlow()
+
+    private val _autoLockOption = MutableStateFlow("فوراً")
+    val autoLockOption: StateFlow<String> = _autoLockOption.asStateFlow()
+
+    private val _hideCodesWhenLocked = MutableStateFlow(false)
+    val hideCodesWhenLocked: StateFlow<Boolean> = _hideCodesWhenLocked.asStateFlow()
+
+    private val _iCloudSyncEnabled = MutableStateFlow(true)
+    val iCloudSyncEnabled: StateFlow<Boolean> = _iCloudSyncEnabled.asStateFlow()
+
+    private val _copiedCodeId = MutableStateFlow<String?>(null)
+    val copiedCodeId: StateFlow<String?> = _copiedCodeId.asStateFlow()
+
+    init {
+        // Periodic 1-second ticker for precise TOTP countdowns
+        viewModelScope.launch {
+            while (isActive) {
+                _currentTimeSeconds.value = System.currentTimeMillis() / 1000L
+                delay(500)
+            }
+        }
+    }
+
+    fun navigateTo(screen: AegisScreen) {
+        _currentScreen.value = screen
+    }
+
+    fun showAddSheet() {
+        _isAddSheetVisible.value = true
+    }
+
+    fun hideAddSheet() {
+        _isAddSheetVisible.value = false
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun clearSearchQuery() {
+        _searchQuery.value = ""
+    }
+
+    fun toggleFaceId(enabled: Boolean) {
+        _faceIdEnabled.value = enabled
+    }
+
+    fun setAutoLockOption(option: String) {
+        _autoLockOption.value = option
+    }
+
+    fun toggleHideCodes(hide: Boolean) {
+        _hideCodesWhenLocked.value = hide
+    }
+
+    fun toggleICloudSync(enabled: Boolean) {
+        _iCloudSyncEnabled.value = enabled
+    }
+
+    fun copyCode(context: Context, account: AegisAccount) {
+        val code = TotpGenerator.generateTotp(
+            secretBase32 = account.secret,
+            timeSeconds = _currentTimeSeconds.value,
+            period = account.period,
+            digits = account.digits,
+            algorithm = account.algorithm
+        )
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("TOTP Code", code)
+        clipboard.setPrimaryClip(clip)
+
+        _copiedCodeId.value = account.id
+        Toast.makeText(context, "تم نسخ الرمز: $code", Toast.LENGTH_SHORT).show()
+
+        viewModelScope.launch {
+            delay(2000)
+            if (_copiedCodeId.value == account.id) {
+                _copiedCodeId.value = null
+            }
+        }
+    }
+
+    fun addAccount(
+        issuer: String,
+        accountName: String,
+        secret: String,
+        algorithm: String = "SHA-1",
+        digits: Int = 6,
+        period: Int = 30
+    ) {
+        val newAccount = AegisAccount(
+            id = "acc_${System.currentTimeMillis()}",
+            issuer = issuer.ifBlank { "خدمة جديدة" },
+            accountName = accountName.ifBlank { "user@example.com" },
+            secret = secret.ifBlank { "JBSWY3DPEHPK3PXP" },
+            algorithm = algorithm,
+            digits = digits,
+            period = period,
+            addedDate = "اليوم"
+        )
+        _accounts.value = listOf(newAccount) + _accounts.value
+        _currentScreen.value = AegisScreen.Main
+    }
+
+    fun deleteAccount(accountId: String) {
+        _accounts.value = _accounts.value.filterNot { it.id == accountId }
+        if (_accounts.value.isEmpty()) {
+            _currentScreen.value = AegisScreen.EmptyState
+        } else {
+            _currentScreen.value = AegisScreen.Main
+        }
+    }
+
+    fun resetToDemoAccounts() {
+        _accounts.value = initialAccounts
+        _currentScreen.value = AegisScreen.Main
+    }
+
+    fun clearAllAccounts() {
+        _accounts.value = emptyList()
+        _currentScreen.value = AegisScreen.EmptyState
+    }
+}

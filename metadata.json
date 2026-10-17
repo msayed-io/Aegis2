@@ -1,0 +1,6 @@
+{
+  "name": "Aegis",
+  "description": "تطبيق مصادقة ثنائي العامل (2FA) آمن وخاص بتصميم عربي هادئ ودقيق",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
