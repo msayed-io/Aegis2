@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.example.crypto.OtpAuthParser
 import com.example.crypto.TotpGenerator
+import com.example.model.OnyxAccount
+import com.example.vault.OnyxVault
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -57,4 +59,17 @@ class OtpAuthParserTest {
   fun `formatCodeWithDot formats 6 digits with center dot`() {
     assertEquals("482 · 913", TotpGenerator.formatCodeWithDot("482913"))
   }
+
+  @Test
+    fun `vault export then import round trips all fields and rejects wrong password`() {
+        val accounts = listOf(
+            OnyxAccount("a1", "GitHub", "dev@example.com", "JBSWY3DPEHPK3PXP", "SHA-1", 6, 30, "1 يناير 2026"),
+            OnyxAccount("a2", "Bank", "user", "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZA", "SHA-256", 8, 60, "")
+        )
+        val bytes = OnyxVault.export(accounts, "correct horse".toCharArray())
+        assertEquals('O'.code.toByte(), bytes[0]); assertEquals('X'.code.toByte(), bytes[1])
+        val restored = OnyxVault.import(bytes, "correct horse".toCharArray())
+        assertEquals(accounts, restored)
+        assertThrows(OnyxVault.VaultException::class.java) { OnyxVault.import(bytes, "wrong".toCharArray()) }
+    }
 }
