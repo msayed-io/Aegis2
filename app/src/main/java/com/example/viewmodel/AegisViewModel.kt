@@ -134,13 +134,23 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
         if (_biometricEnabled.value) _currentScreen.value = AegisScreen.Lock
     }
 
+    /**
+     * Set right before we hand control to a system picker (folder / file chooser) launched by us.
+     * That round-trip stops/starts the Activity exactly like leaving the app, which would otherwise
+     * trigger auto-lock, dispose the screen that launched the picker and drop its result.
+     */
+    private var systemPickerInFlight = false
+    fun onSystemPickerLaunched() { systemPickerInFlight = true }
+
     /** Activity.onStop: remember when we left. */
     fun onAppBackgrounded() {
+        if (systemPickerInFlight) return
         if (_biometricEnabled.value) backgroundedAt = SystemClock.elapsedRealtime()
     }
 
     /** Activity.onStart: re-lock if the configured grace period has elapsed. */
     fun onAppForegrounded() {
+        if (systemPickerInFlight) { systemPickerInFlight = false; return }
         if (!_biometricEnabled.value || backgroundedAt < 0L) return
         val elapsed = SystemClock.elapsedRealtime() - backgroundedAt
         backgroundedAt = -1L

@@ -265,6 +265,7 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                         onExport = { viewModel.exportVault(it) },
                         onImport = { uri, pwd -> viewModel.importVault(uri, pwd) },
                         onClearResult = { viewModel.clearVaultResult() },
+                        onSystemPickerLaunched = { viewModel.onSystemPickerLaunched() },
                         onBack = { viewModel.navigateTo(AegisScreen.Settings) }
                     )
                 }

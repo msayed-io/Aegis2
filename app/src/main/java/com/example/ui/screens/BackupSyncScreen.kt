@@ -73,6 +73,7 @@ fun BackupSyncScreen(
     onExport: (password: CharArray) -> Unit,
     onImport: (uri: Uri, password: CharArray) -> Unit,
     onClearResult: () -> Unit,
+    onSystemPickerLaunched: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -97,6 +98,7 @@ fun BackupSyncScreen(
     fun startExport() {
         if (folderManager.grantedTreeUri == null) {
             pendingAction = PendingAction.EXPORT
+            onSystemPickerLaunched()
             folderPicker.launch(null)
         } else {
             showExportSheet = true
@@ -143,7 +145,7 @@ fun BackupSyncScreen(
                                 Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, null, tint = TertiaryLabel, modifier = Modifier.size(18.dp))
                             }
                         },
-                        onClick = { pendingAction = null; folderPicker.launch(null) }
+                        onClick = { pendingAction = null; onSystemPickerLaunched(); folderPicker.launch(null) }
                     )
                 }
 
@@ -217,7 +219,7 @@ fun BackupSyncScreen(
             if (showImportSheet) {
                 ImportSheet(
                     pickedUri = pickedImportUri,
-                    onPickFile = { filePicker.launch(arrayOf("*/*")) },
+                    onPickFile = { onSystemPickerLaunched(); filePicker.launch(arrayOf("*/*")) },
                     onDismiss = { showImportSheet = false; pickedImportUri = null },
                     onConfirm = { pwd ->
                         val uri = pickedImportUri
