@@ -41,14 +41,14 @@ import com.example.ui.theme.*
 
 @Composable
 fun SettingsScreen(
-    faceIdEnabled: Boolean,
+    biometricEnabled: Boolean,
     autoLockOption: String,
     hideCodesWhenLocked: Boolean,
-    iCloudSyncEnabled: Boolean,
-    onToggleFaceId: (Boolean) -> Unit,
+    cloudSyncEnabled: Boolean,
+    onToggleBiometric: (Boolean) -> Unit,
     onAutoLockChange: (String) -> Unit,
     onToggleHideCodes: (Boolean) -> Unit,
-    onToggleICloudSync: (Boolean) -> Unit,
+    onToggleCloudSync: (Boolean) -> Unit,
     onNavigateToBackupSync: () -> Unit,
     onBack: () -> Unit,
     onOpenWelcome: () -> Unit,
@@ -161,8 +161,8 @@ fun SettingsScreen(
                             }
                         }
                         IosSwitch(
-                            checked = faceIdEnabled,
-                            onCheckedChange = onToggleFaceId,
+                            checked = biometricEnabled,
+                            onCheckedChange = onToggleBiometric,
                             testTag = "switch_biometric"
                         )
                     }
@@ -250,8 +250,8 @@ fun SettingsScreen(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             IosSwitch(
-                                checked = iCloudSyncEnabled,
-                                onCheckedChange = onToggleICloudSync,
+                                checked = cloudSyncEnabled,
+                                onCheckedChange = onToggleCloudSync,
                                 testTag = "switch_cloud_sync"
                             )
                         }

@@ -2,7 +2,7 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Apple iOS Reference Dark Semantic Tokens
+// Onyx Dark Semantic Tokens
 val SystemBackground = Color(0xFF000000)
 val SystemGroupedBackground = Color(0xFF000000)
 

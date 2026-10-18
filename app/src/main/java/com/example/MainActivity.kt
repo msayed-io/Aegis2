@@ -192,14 +192,14 @@ fun AegisAppContent(viewModel: AegisViewModel) {
 
                 is AegisScreen.Settings -> {
                     SettingsScreen(
-                        faceIdEnabled = biometricEnabled,
+                        biometricEnabled = biometricEnabled,
                         autoLockOption = autoLockOption,
                         hideCodesWhenLocked = hideCodesWhenLocked,
-                        iCloudSyncEnabled = cloudSyncEnabled,
-                        onToggleFaceId = { viewModel.toggleBiometric(it) },
+                        cloudSyncEnabled = cloudSyncEnabled,
+                        onToggleBiometric = { viewModel.toggleBiometric(it) },
                         onAutoLockChange = { viewModel.setAutoLockOption(it) },
                         onToggleHideCodes = { viewModel.toggleHideCodes(it) },
-                        onToggleICloudSync = { viewModel.toggleCloudSync(it) },
+                        onToggleCloudSync = { viewModel.toggleCloudSync(it) },
                         onNavigateToBackupSync = { viewModel.navigateTo(AegisScreen.BackupSync) },
                         onBack = { viewModel.navigateTo(AegisScreen.Main) },
                         onOpenWelcome = { viewModel.navigateTo(AegisScreen.Welcome) },

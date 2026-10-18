@@ -49,13 +49,10 @@ class AegisViewModel : ViewModel() {
     private val _currentTimeSeconds = MutableStateFlow(System.currentTimeMillis() / 1000L)
     val currentTimeSeconds: StateFlow<Long> = _currentTimeSeconds.asStateFlow()
 
-    // Settings - Android Biometric (was Face ID / iCloud)
+    // Settings - Android Biometric 
     private val _biometricEnabled = MutableStateFlow(true)
     val biometricEnabled: StateFlow<Boolean> = _biometricEnabled.asStateFlow()
 
-    // Legacy aliases for backward compatibility during migration
-    val faceIdEnabled: StateFlow<Boolean> get() = biometricEnabled
-    fun toggleFaceId(enabled: Boolean) { toggleBiometric(enabled) }
 
     private val _autoLockOption = MutableStateFlow("فوراً")
     val autoLockOption: StateFlow<String> = _autoLockOption.asStateFlow()
@@ -65,9 +62,6 @@ class AegisViewModel : ViewModel() {
 
     private val _cloudSyncEnabled = MutableStateFlow(true)
     val cloudSyncEnabled: StateFlow<Boolean> = _cloudSyncEnabled.asStateFlow()
-    // Legacy aliases
-    val iCloudSyncEnabled: StateFlow<Boolean> get() = cloudSyncEnabled
-    fun toggleICloudSync(enabled: Boolean) { toggleCloudSync(enabled) }
 
     private val _copiedCodeId = MutableStateFlow<String?>(null)
     val copiedCodeId: StateFlow<String?> = _copiedCodeId.asStateFlow()

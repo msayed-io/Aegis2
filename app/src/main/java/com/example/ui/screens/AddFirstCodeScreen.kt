@@ -93,7 +93,7 @@ fun AddFirstCodeScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // Apple Account TOTP Card Preview (Elevated 1: SecondarySystemBackground)
+                    // Demo Account TOTP Card Preview (Elevated 1: SecondarySystemBackground)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -114,7 +114,7 @@ fun AddFirstCodeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "A",
+                                    text = "G",
                                     fontFamily = InterFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 17.sp,
@@ -127,7 +127,7 @@ fun AddFirstCodeScreen(
                             Column {
                                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                                     Text(
-                                        text = "Apple",
+                                        text = "Google",
                                         fontFamily = InterFontFamily,
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 17.sp,
