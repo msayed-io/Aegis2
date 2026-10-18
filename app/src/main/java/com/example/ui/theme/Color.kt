@@ -42,6 +42,5 @@ val SystemGray4 = Color(0xFF3A3A3C)
 val SystemGray5 = Color(0xFF2C2C2E)
 val SystemGray6 = Color(0xFF1C1C1E)
 
-// Liquid Glass Surface Accents (strictly for Navigation & Toolbars)
-val LiquidGlassNav = Color(0xE61C1C1E)      // 90% opaque elevated surface for toolbars
-val LiquidGlassFill = Color(0x33FFFFFF)
+// Solid dark toolbar surface without translucent or glossy glass treatment.
+val DarkToolbarSurface = Color(0xFF1C1C1E)
