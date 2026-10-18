@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
-import com.example.ui.components.AegisEmblem
+import com.example.ui.components.OnyxEmblem
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
@@ -87,7 +87,7 @@ fun TotpExplanationScreen(
                         .background(SecondarySystemBackground, CardShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    AegisEmblem(size = 32.dp, tint = SystemBlue, strokeWidth = 2.5f)
+                    OnyxEmblem(size = 32.dp, tint = SystemBlue, strokeWidth = 2.5f)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

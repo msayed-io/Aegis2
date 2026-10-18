@@ -2,13 +2,16 @@ package com.example.viewmodel
 
 import android.app.Application
 import android.content.ClipData
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
+import android.os.PersistableBundle
 import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.crypto.TotpGenerator
-import com.example.model.AegisAccount
+import com.example.model.OnyxAccount
 import com.example.security.SecurityPreferences
 import com.example.data.AccountsStore
 import com.example.vault.OnyxVault
@@ -16,6 +19,7 @@ import com.example.vault.VaultFolderManager
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,37 +27,41 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-sealed class AegisScreen {
-    object Main : AegisScreen()
-    object Lock : AegisScreen()
-    data class CodeDetail(val accountId: String) : AegisScreen()
-    object Search : AegisScreen()
-    object EmptyState : AegisScreen()
-    object QrScanner : AegisScreen()
-    object ManualEntry : AegisScreen()
-    object Settings : AegisScreen()
-    object BackupSync : AegisScreen()
-    object Welcome : AegisScreen()
-    object TotpExplanation : AegisScreen()
-    object AddFirstCode : AegisScreen()
+sealed class OnyxScreen {
+    object Main : OnyxScreen()
+    object Lock : OnyxScreen()
+    data class CodeDetail(val accountId: String) : OnyxScreen()
+    object Search : OnyxScreen()
+    object EmptyState : OnyxScreen()
+    object QrScanner : OnyxScreen()
+    object ManualEntry : OnyxScreen()
+    data class EditAccount(val accountId: String) : OnyxScreen()
+    object Licenses : OnyxScreen()
+    object Settings : OnyxScreen()
+    object BackupSync : OnyxScreen()
+    object Welcome : OnyxScreen()
+    object TotpExplanation : OnyxScreen()
+    object AddFirstCode : OnyxScreen()
 }
 
-class AegisViewModel(application: Application) : AndroidViewModel(application) {
+class OnyxViewModel(application: Application) : AndroidViewModel(application) {
 
     private val securityPrefs = SecurityPreferences(application)
     private val accountsStore = AccountsStore(application)
     val vaultFolders = VaultFolderManager(application)
 
-    private val initialAccounts = listOf<AegisAccount>()
+    private val _accounts = MutableStateFlow<List<OnyxAccount>>(emptyList())
+    val accounts: StateFlow<List<OnyxAccount>> = _accounts.asStateFlow()
 
-    private val _accounts = MutableStateFlow<List<AegisAccount>>(emptyList())
-    val accounts: StateFlow<List<AegisAccount>> = _accounts.asStateFlow()
-
-    // Start LOCKED whenever biometric protection is enabled (persisted across launches).
-    private val _currentScreen = MutableStateFlow<AegisScreen>(
-        if (securityPrefs.biometricEnabled) AegisScreen.Lock else AegisScreen.Main
+    // Start order: first launch -> onboarding; locked -> Lock; otherwise Main.
+    private val _currentScreen = MutableStateFlow<OnyxScreen>(
+        when {
+            securityPrefs.isFirstLaunch -> OnyxScreen.Welcome
+            securityPrefs.biometricEnabled -> OnyxScreen.Lock
+            else -> OnyxScreen.Main
+        }
     )
-    val currentScreen: StateFlow<AegisScreen> = _currentScreen.asStateFlow()
+    val currentScreen: StateFlow<OnyxScreen> = _currentScreen.asStateFlow()
 
     private val _isAddSheetVisible = MutableStateFlow(false)
     val isAddSheetVisible: StateFlow<Boolean> = _isAddSheetVisible.asStateFlow()
@@ -75,9 +83,6 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
     private val _hideCodesWhenLocked = MutableStateFlow(securityPrefs.hideCodesWhenLocked)
     val hideCodesWhenLocked: StateFlow<Boolean> = _hideCodesWhenLocked.asStateFlow()
 
-    private val _cloudSyncEnabled = MutableStateFlow(securityPrefs.cloudSyncEnabled)
-    val cloudSyncEnabled: StateFlow<Boolean> = _cloudSyncEnabled.asStateFlow()
-
     private val _copiedCodeId = MutableStateFlow<String?>(null)
     val copiedCodeId: StateFlow<String?> = _copiedCodeId.asStateFlow()
 
@@ -91,7 +96,7 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun navigateTo(screen: AegisScreen) {
+    fun navigateTo(screen: OnyxScreen) {
         _currentScreen.value = screen
     }
 
@@ -116,9 +121,27 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
         securityPrefs.hideCodesWhenLocked = hide
     }
 
-    fun toggleCloudSync(enabled: Boolean) {
-        _cloudSyncEnabled.value = enabled
-        securityPrefs.cloudSyncEnabled = enabled
+    /** Called when the onboarding flow ends (finished or skipped). */
+    fun completeOnboarding(next: OnyxScreen = OnyxScreen.Main) {
+        securityPrefs.isFirstLaunch = false
+        _currentScreen.value = if (next == OnyxScreen.Main && _biometricEnabled.value) OnyxScreen.Lock else next
+    }
+
+    /** One-shot user-facing error (e.g. invalid QR); UI shows it and calls [clearUserMessage]. */
+    private val _userMessage = MutableStateFlow<String?>(null)
+    val userMessage: StateFlow<String?> = _userMessage.asStateFlow()
+    fun showUserMessage(message: String) { _userMessage.value = message }
+    fun clearUserMessage() { _userMessage.value = null }
+
+    /** Codes are masked on the main list when the setting is on; a tap reveals one card. */
+    private val _revealedCodeId = MutableStateFlow<String?>(null)
+    val revealedCodeId: StateFlow<String?> = _revealedCodeId.asStateFlow()
+    fun revealCode(accountId: String) {
+        _revealedCodeId.value = accountId
+        viewModelScope.launch {
+            delay(10_000)
+            if (_revealedCodeId.value == accountId) _revealedCodeId.value = null
+        }
     }
 
     // ---- Lock lifecycle -------------------------------------------------------------------
@@ -127,11 +150,11 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
 
     fun unlock() {
         backgroundedAt = -1L
-        _currentScreen.value = AegisScreen.Main
+        _currentScreen.value = OnyxScreen.Main
     }
 
     fun lock() {
-        if (_biometricEnabled.value) _currentScreen.value = AegisScreen.Lock
+        if (_biometricEnabled.value) _currentScreen.value = OnyxScreen.Lock
     }
 
     /**
@@ -155,32 +178,54 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
         val elapsed = SystemClock.elapsedRealtime() - backgroundedAt
         backgroundedAt = -1L
         if (elapsed >= SecurityPreferences.autoLockMillis(_autoLockOption.value)) {
-            _currentScreen.value = AegisScreen.Lock
+            _currentScreen.value = OnyxScreen.Lock
         }
     }
 
-    fun copyCode(context: Context, account: AegisAccount) {
-        val code = TotpGenerator.generateTotp(
+    private var clipboardClearJob: Job? = null
+
+    fun copyCode(context: Context, account: OnyxAccount) {
+        val code = TotpGenerator.generateTotpOrNull(
             secretBase32 = account.secret,
             timeSeconds = _currentTimeSeconds.value,
             period = account.period,
             digits = account.digits,
             algorithm = account.algorithm
         )
+        if (code == null) {
+            showUserMessage("لا يمكن نسخ هذا الحساب: المفتاح غير صالح")
+            return
+        }
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("TOTP Code", code)
+        val clip = ClipData.newPlainText("TOTP Code", code).apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+            }
+        }
         clipboard.setPrimaryClip(clip)
 
         _copiedCodeId.value = account.id
-
         viewModelScope.launch {
             delay(1600)
-            if (_copiedCodeId.value == account.id) {
-                _copiedCodeId.value = null
+            if (_copiedCodeId.value == account.id) _copiedCodeId.value = null
+        }
+
+        // Security: wipe the clipboard 30 s after copying, only if it still holds our code.
+        clipboardClearJob?.cancel()
+        clipboardClearJob = viewModelScope.launch {
+            delay(CLIPBOARD_TTL_MS)
+            val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+            if (current == code) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) clipboard.clearPrimaryClip()
+                else clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
             }
         }
     }
 
+    /**
+     * Validates and adds an account. Returns null on success or an Arabic error message.
+     * Nothing is auto-filled: blank issuer/account or an invalid Base32 secret is rejected.
+     */
     fun addAccount(
         issuer: String,
         accountName: String,
@@ -188,41 +233,80 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
         algorithm: String = "SHA-1",
         digits: Int = 6,
         period: Int = 30
-    ) {
-        val newAccount = AegisAccount(
+    ): String? {
+        validateAccountInput(issuer, accountName, secret, algorithm, digits, period)?.let { return it }
+        val newAccount = OnyxAccount(
             id = "acc_${System.currentTimeMillis()}",
-            issuer = issuer.ifBlank { "خدمة جديدة" },
-            accountName = accountName.ifBlank { "user@example.com" },
-            secret = secret.ifBlank { "JBSWY3DPEHPK3PXP" },
+            issuer = issuer.trim(),
+            accountName = accountName.trim(),
+            secret = secret.trim().uppercase().replace(" ", ""),
             algorithm = algorithm,
             digits = digits,
             period = period,
-            addedDate = "اليوم"
+            addedDate = todayLabel()
         )
         _accounts.value = listOf(newAccount) + _accounts.value
         accountsStore.save(_accounts.value)
-        _currentScreen.value = AegisScreen.Main
+        _currentScreen.value = OnyxScreen.Main
+        return null
     }
+
+    /** Updates issuer/account name (and optionally the TOTP parameters) of an existing account. */
+    fun updateAccount(
+        accountId: String,
+        issuer: String,
+        accountName: String,
+        secret: String,
+        algorithm: String,
+        digits: Int,
+        period: Int
+    ): String? {
+        validateAccountInput(issuer, accountName, secret, algorithm, digits, period)?.let { return it }
+        val existing = _accounts.value.firstOrNull { it.id == accountId } ?: return "الحساب غير موجود"
+        val updated = existing.copy(
+            issuer = issuer.trim(),
+            accountName = accountName.trim(),
+            secret = secret.trim().uppercase().replace(" ", ""),
+            algorithm = algorithm,
+            digits = digits,
+            period = period
+        )
+        _accounts.value = _accounts.value.map { if (it.id == accountId) updated else it }
+        accountsStore.save(_accounts.value)
+        _currentScreen.value = OnyxScreen.CodeDetail(accountId)
+        return null
+    }
+
+    private fun validateAccountInput(
+        issuer: String, accountName: String, secret: String, algorithm: String, digits: Int, period: Int
+    ): String? = when {
+        issuer.isBlank() -> "اسم الخدمة مطلوب"
+        accountName.isBlank() -> "اسم الحساب مطلوب"
+        secret.isBlank() -> "المفتاح السري مطلوب"
+        !TotpGenerator.isValidSecret(secret) -> "المفتاح السري ليس Base32 صالحاً (A–Z و 2–7 فقط)"
+        TotpGenerator.normalizeAlgorithm(algorithm) == null -> "خوارزمية غير مدعومة"
+        digits !in TotpGenerator.SUPPORTED_DIGITS -> "عدد الأرقام يجب أن يكون 6 أو 8"
+        period <= 0 || period > 3600 -> "الفترة يجب أن تكون بين 1 و 3600 ثانية"
+        else -> null
+    }
+
+    private fun todayLabel(): String =
+        java.text.SimpleDateFormat("d MMMM yyyy", java.util.Locale("ar")).format(java.util.Date())
 
     fun deleteAccount(accountId: String) {
         _accounts.value = _accounts.value.filterNot { it.id == accountId }
         accountsStore.save(_accounts.value)
         if (_accounts.value.isEmpty()) {
-            _currentScreen.value = AegisScreen.EmptyState
+            _currentScreen.value = OnyxScreen.EmptyState
         } else {
-            _currentScreen.value = AegisScreen.Main
+            _currentScreen.value = OnyxScreen.Main
         }
-    }
-
-    fun resetToDemoAccounts() {
-        _accounts.value = initialAccounts
-        _currentScreen.value = AegisScreen.Main
     }
 
     fun clearAllAccounts() {
         _accounts.value = emptyList()
         accountsStore.save(_accounts.value)
-        _currentScreen.value = AegisScreen.EmptyState
+        _currentScreen.value = OnyxScreen.EmptyState
     }
 
     // ---- Vault export / import (.ox) --------------------------------------------------------
@@ -272,4 +356,6 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    private companion object { const val CLIPBOARD_TTL_MS = 30_000L }
 }

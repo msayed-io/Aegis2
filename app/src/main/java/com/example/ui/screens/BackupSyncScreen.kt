@@ -56,7 +56,7 @@ import com.example.ui.components.CardShape
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.theme.*
-import com.example.viewmodel.AegisViewModel
+import com.example.viewmodel.OnyxViewModel
 import com.example.vault.VaultFolderManager
 
 /**
@@ -69,7 +69,7 @@ import com.example.vault.VaultFolderManager
 fun BackupSyncScreen(
     accountsCount: Int,
     folderManager: VaultFolderManager,
-    vaultResult: AegisViewModel.VaultResult?,
+    vaultResult: OnyxViewModel.VaultResult?,
     onExport: (password: CharArray) -> Unit,
     onImport: (uri: Uri, password: CharArray) -> Unit,
     onClearResult: () -> Unit,
@@ -517,11 +517,11 @@ private fun ImportSheet(
 }
 
 @Composable
-private fun ResultSheet(result: AegisViewModel.VaultResult, onDismiss: () -> Unit) {
-    val success = result is AegisViewModel.VaultResult.Success
+private fun ResultSheet(result: OnyxViewModel.VaultResult, onDismiss: () -> Unit) {
+    val success = result is OnyxViewModel.VaultResult.Success
     val message = when (result) {
-        is AegisViewModel.VaultResult.Success -> result.message
-        is AegisViewModel.VaultResult.Error -> result.message
+        is OnyxViewModel.VaultResult.Success -> result.message
+        is OnyxViewModel.VaultResult.Error -> result.message
     }
     OnyxSheet(onDismiss = onDismiss) {
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {

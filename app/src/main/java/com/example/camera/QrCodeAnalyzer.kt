@@ -73,6 +73,11 @@ class QrCodeAnalyzer(
         }
     }
 
+    /** Re-arms the analyzer after a rejected (invalid) code so the user can scan again. */
+    fun resetScan() {
+        isScanned.set(false)
+    }
+
     fun close() {
         try {
             scanner.close()

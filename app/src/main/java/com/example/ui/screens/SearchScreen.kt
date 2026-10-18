@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
-import com.example.model.AegisAccount
+import com.example.model.OnyxAccount
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.AccountCodeCard
 import com.example.ui.components.CopiedToast
@@ -38,14 +38,14 @@ import com.example.ui.theme.*
 
 @Composable
 fun SearchScreen(
-    accounts: List<AegisAccount>,
+    accounts: List<OnyxAccount>,
     searchQuery: String,
     currentTimeSeconds: Long,
     copiedCodeId: String?,
     onQueryChange: (String) -> Unit,
     onClearQuery: () -> Unit,
-    onAccountClick: (AegisAccount) -> Unit,
-    onCopyCode: (AegisAccount) -> Unit,
+    onAccountClick: (OnyxAccount) -> Unit,
+    onCopyCode: (OnyxAccount) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -173,14 +173,14 @@ fun SearchScreen(
                             }
                         } else {
                             filtered.forEachIndexed { index, account ->
-                                val code = TotpGenerator.generateTotp(
+                                val code = TotpGenerator.generateTotpOrNull(
                                     secretBase32 = account.secret,
                                     timeSeconds = currentTimeSeconds,
                                     period = account.period,
                                     digits = account.digits,
                                     algorithm = account.algorithm
                                 )
-                                val formattedCode = TotpGenerator.formatCodeWithDot(code)
+                                val formattedCode = code?.let { TotpGenerator.formatCodeWithDot(it) } ?: TotpGenerator.INVALID_CODE_LABEL
                                 val remainingSeconds = TotpGenerator.getRemainingSeconds(account.period, currentTimeSeconds)
                                 val isCopied = copiedCodeId == account.id
 

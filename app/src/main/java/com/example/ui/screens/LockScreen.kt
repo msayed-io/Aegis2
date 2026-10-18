@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.security.BiometricAuthenticator
 import com.example.security.findFragmentActivity
-import com.example.ui.components.AegisEmblem
+import com.example.ui.components.OnyxEmblem
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.Label
 import com.example.ui.theme.SecondarySystemBackground
@@ -92,7 +92,7 @@ fun LockScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Box(modifier = Modifier.size(88.dp).scale(emblemScale.value), contentAlignment = Alignment.Center) {
-                AegisEmblem(size = 76.dp, tint = SystemBlue, strokeWidth = 3.4f, showOuterRing = true)
+                OnyxEmblem(size = 76.dp, tint = SystemBlue, strokeWidth = 3.4f, showOuterRing = true)
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(

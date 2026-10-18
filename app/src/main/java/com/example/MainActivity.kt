@@ -1,6 +1,7 @@
 package com.example
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
 import android.widget.Toast
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +32,7 @@ import com.example.ui.screens.AddFirstCodeScreen
 import com.example.ui.screens.BackupSyncScreen
 import com.example.ui.screens.CodeDetailScreen
 import com.example.ui.screens.EmptyStateScreen
+import com.example.ui.screens.LicensesScreen
 import com.example.ui.screens.LockScreen
 import com.example.ui.screens.MainScreen
 import com.example.ui.screens.ManualEntryScreen
@@ -39,12 +42,12 @@ import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.TotpExplanationScreen
 import com.example.ui.screens.WelcomeScreen
 import com.example.ui.theme.MyApplicationTheme
-import com.example.viewmodel.AegisScreen
-import com.example.viewmodel.AegisViewModel
+import com.example.viewmodel.OnyxScreen
+import com.example.viewmodel.OnyxViewModel
 
 // FragmentActivity is REQUIRED by androidx.biometric.BiometricPrompt.
 class MainActivity : FragmentActivity() {
-    private val viewModel: AegisViewModel by viewModels()
+    private val viewModel: OnyxViewModel by viewModels()
 
     override fun onStart() {
         super.onStart()
@@ -81,18 +84,20 @@ class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Security: block screenshots / screen recording / recent-apps thumbnails of OTP codes.
+        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         applyImmersiveStatusBar()
         setContent {
             MyApplicationTheme {
-                AegisAppContent(viewModel = viewModel)
+                OnyxAppContent(viewModel = viewModel)
             }
         }
     }
 }
 
 @Composable
-fun AegisAppContent(viewModel: AegisViewModel) {
+fun OnyxAppContent(viewModel: OnyxViewModel) {
     val context = LocalContext.current
     val accounts by viewModel.accounts.collectAsState()
     val currentScreen by viewModel.currentScreen.collectAsState()
@@ -104,27 +109,44 @@ fun AegisAppContent(viewModel: AegisViewModel) {
     val biometricEnabled by viewModel.biometricEnabled.collectAsState()
     val autoLockOption by viewModel.autoLockOption.collectAsState()
     val hideCodesWhenLocked by viewModel.hideCodesWhenLocked.collectAsState()
-    val cloudSyncEnabled by viewModel.cloudSyncEnabled.collectAsState()
+    val revealedCodeId by viewModel.revealedCodeId.collectAsState()
+    val userMessage by viewModel.userMessage.collectAsState()
+
+    // One-shot messages (e.g. invalid QR / invalid secret) via a plain system toast.
+    LaunchedEffect(userMessage) {
+        userMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            viewModel.clearUserMessage()
+        }
+    }
 
     var showScreenPickerSheet by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = currentScreen !is AegisScreen.Main) {
+    BackHandler(enabled = currentScreen !is OnyxScreen.Main) {
         when (currentScreen) {
-            is AegisScreen.CodeDetail,
-            is AegisScreen.Search,
-            is AegisScreen.QrScanner,
-            is AegisScreen.ManualEntry,
-            is AegisScreen.Settings,
-            is AegisScreen.Welcome,
-            is AegisScreen.TotpExplanation,
-            is AegisScreen.AddFirstCode,
-            is AegisScreen.EmptyState -> {
-                viewModel.navigateTo(AegisScreen.Main)
+            is OnyxScreen.CodeDetail,
+            is OnyxScreen.Search,
+            is OnyxScreen.QrScanner,
+            is OnyxScreen.ManualEntry,
+            is OnyxScreen.EmptyState -> {
+                viewModel.navigateTo(OnyxScreen.Main)
             }
-            is AegisScreen.BackupSync -> {
-                viewModel.navigateTo(AegisScreen.Settings)
+            is OnyxScreen.Welcome,
+            is OnyxScreen.TotpExplanation,
+            is OnyxScreen.AddFirstCode -> {
+                viewModel.completeOnboarding()
             }
-            is AegisScreen.Lock -> {
+            is OnyxScreen.EditAccount -> {
+                viewModel.navigateTo(OnyxScreen.CodeDetail((currentScreen as OnyxScreen.EditAccount).accountId))
+            }
+            is OnyxScreen.Settings -> {
+                viewModel.navigateTo(OnyxScreen.Main)
+            }
+            is OnyxScreen.BackupSync,
+            is OnyxScreen.Licenses -> {
+                viewModel.navigateTo(OnyxScreen.Settings)
+            }
+            is OnyxScreen.Lock -> {
                 context.findFragmentActivity()?.moveTaskToBack(true)
             }
             else -> {}
@@ -134,47 +156,51 @@ fun AegisAppContent(viewModel: AegisViewModel) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(modifier = Modifier.fillMaxSize()) {
             when (val screen = currentScreen) {
-                is AegisScreen.Lock -> {
+                is OnyxScreen.Lock -> {
                     LockScreen(
                         onUnlocked = { viewModel.unlock() }
                     )
                 }
 
-                is AegisScreen.Main -> {
+                is OnyxScreen.Main -> {
                     MainScreen(
                         accounts = accounts,
                         currentTimeSeconds = currentTimeSeconds,
                         copiedCodeId = copiedCodeId,
+                        hideCodes = hideCodesWhenLocked,
+                        revealedCodeId = revealedCodeId,
+                        onRevealCode = { viewModel.revealCode(it.id) },
                         onAccountClick = { account ->
-                            viewModel.navigateTo(AegisScreen.CodeDetail(account.id))
+                            viewModel.navigateTo(OnyxScreen.CodeDetail(account.id))
                         },
                         onCopyCode = { account ->
                             viewModel.copyCode(context, account)
                         },
-                        onSearchClick = { viewModel.navigateTo(AegisScreen.Search) },
-                        onSettingsClick = { viewModel.navigateTo(AegisScreen.Settings) },
-                        onScanQrClick = { viewModel.navigateTo(AegisScreen.QrScanner) },
+                        onSearchClick = { viewModel.navigateTo(OnyxScreen.Search) },
+                        onSettingsClick = { viewModel.navigateTo(OnyxScreen.Settings) },
+                        onScanQrClick = { viewModel.navigateTo(OnyxScreen.QrScanner) },
                         onAddClick = { viewModel.showAddSheet() }
                     )
                 }
 
-                is AegisScreen.CodeDetail -> {
+                is OnyxScreen.CodeDetail -> {
                     val account = accounts.find { it.id == screen.accountId } ?: accounts.firstOrNull()
                     if (account != null) {
                         CodeDetailScreen(
                             account = account,
                             currentTimeSeconds = currentTimeSeconds,
                             isCopied = copiedCodeId == account.id,
-                            onBack = { viewModel.navigateTo(AegisScreen.Main) },
+                            onBack = { viewModel.navigateTo(OnyxScreen.Main) },
                             onCopy = { viewModel.copyCode(context, account) },
-                            onEdit = { viewModel.navigateTo(AegisScreen.ManualEntry) }
+                            onEdit = { viewModel.navigateTo(OnyxScreen.EditAccount(account.id)) },
+                            onDelete = { viewModel.deleteAccount(account.id) }
                         )
                     } else {
-                        viewModel.navigateTo(AegisScreen.Main)
+                        viewModel.navigateTo(OnyxScreen.Main)
                     }
                 }
 
-                is AegisScreen.Search -> {
+                is OnyxScreen.Search -> {
                     SearchScreen(
                         accounts = accounts,
                         searchQuery = searchQuery,
@@ -183,52 +209,77 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                         onQueryChange = { viewModel.setSearchQuery(it) },
                         onClearQuery = { viewModel.clearSearchQuery() },
                         onAccountClick = { account ->
-                            viewModel.navigateTo(AegisScreen.CodeDetail(account.id))
+                            viewModel.navigateTo(OnyxScreen.CodeDetail(account.id))
                         },
                         onCopyCode = { account ->
                             viewModel.copyCode(context, account)
                         },
                         onCancel = {
                             viewModel.clearSearchQuery()
-                            viewModel.navigateTo(AegisScreen.Main)
+                            viewModel.navigateTo(OnyxScreen.Main)
                         }
                     )
                 }
 
-                is AegisScreen.EmptyState -> {
+                is OnyxScreen.EmptyState -> {
                     EmptyStateScreen(
                         onAddFirst = { viewModel.showAddSheet() },
-                        onImport = { viewModel.resetToDemoAccounts() },
-                        onSettingsClick = { viewModel.navigateTo(AegisScreen.Settings) },
-                        onScanQrClick = { viewModel.navigateTo(AegisScreen.QrScanner) }
+                        onImport = { viewModel.navigateTo(OnyxScreen.BackupSync) },
+                        onSettingsClick = { viewModel.navigateTo(OnyxScreen.Settings) },
+                        onScanQrClick = { viewModel.navigateTo(OnyxScreen.QrScanner) }
                     )
                 }
 
-                is AegisScreen.QrScanner -> {
+                is OnyxScreen.QrScanner -> {
                     QrScannerScreen(
-                        onClose = { viewModel.navigateTo(AegisScreen.Main) },
-                        onManualEntry = { viewModel.navigateTo(AegisScreen.ManualEntry) },
-                        onScannedResult = { issuer, account, secret ->
-                            viewModel.addAccount(issuer, account, secret)
+                        onClose = { viewModel.navigateTo(OnyxScreen.Main) },
+                        onManualEntry = { viewModel.navigateTo(OnyxScreen.ManualEntry) },
+                        onScannedResult = { parsed ->
+                            viewModel.addAccount(
+                                issuer = parsed.issuer,
+                                accountName = parsed.accountName,
+                                secret = parsed.secret,
+                                algorithm = parsed.algorithm,
+                                digits = parsed.digits,
+                                period = parsed.period
+                            )
                         }
                     )
                 }
 
-                is AegisScreen.ManualEntry -> {
+                is OnyxScreen.ManualEntry -> {
                     ManualEntryScreen(
-                        onCancel = { viewModel.navigateTo(AegisScreen.Main) },
+                        onCancel = { viewModel.navigateTo(OnyxScreen.Main) },
                         onSave = { issuer, account, secret, alg, dig, per ->
                             viewModel.addAccount(issuer, account, secret, alg, dig, per)
                         }
                     )
                 }
 
-                is AegisScreen.Settings -> {
+                is OnyxScreen.EditAccount -> {
+                    val account = accounts.find { it.id == screen.accountId }
+                    if (account != null) {
+                        ManualEntryScreen(
+                            existing = account,
+                            onCancel = { viewModel.navigateTo(OnyxScreen.CodeDetail(account.id)) },
+                            onSave = { issuer, acc, secret, alg, dig, per ->
+                                viewModel.updateAccount(account.id, issuer, acc, secret, alg, dig, per)
+                            }
+                        )
+                    } else {
+                        viewModel.navigateTo(OnyxScreen.Main)
+                    }
+                }
+
+                is OnyxScreen.Licenses -> {
+                    LicensesScreen(onBack = { viewModel.navigateTo(OnyxScreen.Settings) })
+                }
+
+                is OnyxScreen.Settings -> {
                     SettingsScreen(
                         biometricEnabled = biometricEnabled,
                         autoLockOption = autoLockOption,
                         hideCodesWhenLocked = hideCodesWhenLocked,
-                        cloudSyncEnabled = cloudSyncEnabled,
                         onToggleBiometric = { wanted ->
                             val activity = context.findFragmentActivity()
                             when {
@@ -248,15 +299,15 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                         },
                         onAutoLockChange = { viewModel.setAutoLockOption(it) },
                         onToggleHideCodes = { viewModel.toggleHideCodes(it) },
-                        onToggleCloudSync = { viewModel.toggleCloudSync(it) },
-                        onNavigateToBackupSync = { viewModel.navigateTo(AegisScreen.BackupSync) },
-                        onBack = { viewModel.navigateTo(AegisScreen.Main) },
-                        onOpenWelcome = { viewModel.navigateTo(AegisScreen.Welcome) },
-                        onOpenTotpMath = { viewModel.navigateTo(AegisScreen.TotpExplanation) }
+                        onNavigateToBackupSync = { viewModel.navigateTo(OnyxScreen.BackupSync) },
+                        onBack = { viewModel.navigateTo(OnyxScreen.Main) },
+                        onOpenWelcome = { viewModel.navigateTo(OnyxScreen.Welcome) },
+                        onOpenTotpMath = { viewModel.navigateTo(OnyxScreen.TotpExplanation) },
+                        onOpenLicenses = { viewModel.navigateTo(OnyxScreen.Licenses) }
                     )
                 }
 
-                is AegisScreen.BackupSync -> {
+                is OnyxScreen.BackupSync -> {
                     val vaultResult by viewModel.vaultResult.collectAsState()
                     BackupSyncScreen(
                         accountsCount = accounts.size,
@@ -266,32 +317,32 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                         onImport = { uri, pwd -> viewModel.importVault(uri, pwd) },
                         onClearResult = { viewModel.clearVaultResult() },
                         onSystemPickerLaunched = { viewModel.onSystemPickerLaunched() },
-                        onBack = { viewModel.navigateTo(AegisScreen.Settings) }
+                        onBack = { viewModel.navigateTo(OnyxScreen.Settings) }
                     )
                 }
 
-                is AegisScreen.Welcome -> {
+                is OnyxScreen.Welcome -> {
                     WelcomeScreen(
-                        onContinue = { viewModel.navigateTo(AegisScreen.TotpExplanation) },
-                        onSkip = { viewModel.navigateTo(AegisScreen.Main) }
+                        onContinue = { viewModel.navigateTo(OnyxScreen.TotpExplanation) },
+                        onSkip = { viewModel.completeOnboarding() }
                     )
                 }
 
-                is AegisScreen.TotpExplanation -> {
+                is OnyxScreen.TotpExplanation -> {
                     TotpExplanationScreen(
                         currentTimeSeconds = currentTimeSeconds,
-                        onContinue = { viewModel.navigateTo(AegisScreen.AddFirstCode) },
-                        onSkip = { viewModel.navigateTo(AegisScreen.Main) },
-                        onBack = { viewModel.navigateTo(AegisScreen.Welcome) }
+                        onContinue = { viewModel.navigateTo(OnyxScreen.AddFirstCode) },
+                        onSkip = { viewModel.completeOnboarding() },
+                        onBack = { viewModel.navigateTo(OnyxScreen.Welcome) }
                     )
                 }
 
-                is AegisScreen.AddFirstCode -> {
+                is OnyxScreen.AddFirstCode -> {
                     AddFirstCodeScreen(
                         currentTimeSeconds = currentTimeSeconds,
-                        onAddFirst = { viewModel.showAddSheet() },
-                        onDoLater = { viewModel.navigateTo(AegisScreen.Main) },
-                        onSettingsClick = { viewModel.navigateTo(AegisScreen.Settings) }
+                        onAddFirst = { viewModel.completeOnboarding(); viewModel.showAddSheet() },
+                        onDoLater = { viewModel.completeOnboarding() },
+                        onSettingsClick = { viewModel.completeOnboarding(OnyxScreen.Settings) }
                     )
                 }
             }
@@ -299,11 +350,9 @@ fun AegisAppContent(viewModel: AegisViewModel) {
             if (isAddSheetVisible) {
                 AddAccountSheet(
                     onDismiss = { viewModel.hideAddSheet() },
-                    onScanQr = { viewModel.navigateTo(AegisScreen.QrScanner) },
-                    onManualEntry = { viewModel.navigateTo(AegisScreen.ManualEntry) },
-                    onImportOther = {
-                        viewModel.resetToDemoAccounts()
-                    }
+                    onScanQr = { viewModel.navigateTo(OnyxScreen.QrScanner) },
+                    onManualEntry = { viewModel.navigateTo(OnyxScreen.ManualEntry) },
+                    onImportOther = { viewModel.navigateTo(OnyxScreen.BackupSync) }
                 )
             }
         }

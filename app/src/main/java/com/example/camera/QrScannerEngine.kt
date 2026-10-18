@@ -92,6 +92,11 @@ class QrScannerEngine(
         }, androidx.core.content.ContextCompat.getMainExecutor(previewView.context))
     }
 
+    /** Allows another detection after an invalid code was rejected. */
+    fun rescan() {
+        analyzer?.resetScan()
+    }
+
     fun shutdown() {
         try {
             cameraProvider?.unbindAll()

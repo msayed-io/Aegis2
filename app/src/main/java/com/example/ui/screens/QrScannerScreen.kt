@@ -1,6 +1,11 @@
 package com.example.ui.screens
 
 import android.Manifest
+import com.example.ui.theme.SystemRed
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import com.example.crypto.OtpAuthParser
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -69,9 +74,11 @@ import com.google.accompanist.permissions.rememberPermissionState
 fun QrScannerScreen(
     onClose: () -> Unit,
     onManualEntry: () -> Unit,
-    onScannedResult: (issuer: String, account: String, secret: String) -> Unit,
+    /** Receives a fully parsed otpauth account; returns null on success or an error message. */
+    onScannedResult: (parsed: OtpAuthParser.Parsed) -> String?,
     modifier: Modifier = Modifier
 ) {
+    var scanError by remember { mutableStateOf<String?>(null) }
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -98,22 +105,21 @@ fun QrScannerScreen(
             }
 
             val engine = remember(lifecycleOwner, previewView) {
+                var engineRef: QrScannerEngine? = null
                 QrScannerEngine(lifecycleOwner, previewView) { rawBarcode ->
-                    var issuer = "Onyx"
-                    var account = "User"
-                    var secret = rawBarcode
-
-                    if (rawBarcode.startsWith("otpauth://", ignoreCase = true)) {
-                        try {
-                            val uri = android.net.Uri.parse(rawBarcode)
-                            secret = uri.getQueryParameter("secret") ?: rawBarcode
-                            issuer = uri.getQueryParameter("issuer") ?: "Onyx"
-                            val path = uri.path?.removePrefix("/") ?: ""
-                            account = if (path.contains(":")) path.substringAfter(":") else path
-                        } catch (_: Exception) {}
+                    // Full otpauth:// validation. Invalid codes are rejected with a reason and scanning resumes.
+                    val error = try {
+                        onScannedResult(OtpAuthParser.parse(rawBarcode))
+                    } catch (e: OtpAuthParser.ParseException) {
+                        e.message
+                    } catch (e: Exception) {
+                        "تعذّر قراءة الرمز"
                     }
-                    onScannedResult(issuer, account, secret)
-                }
+                    if (error != null) {
+                        scanError = error
+                        engineRef?.rescan()
+                    }
+                }.also { engineRef = it }
             }
 
             // Robust lifecycle: start when composed, shutdown when disposed
@@ -135,6 +141,29 @@ fun QrScannerScreen(
                     factory = { previewView },
                     modifier = Modifier.fillMaxSize()
                 )
+
+                scanError?.let { msg ->
+                    LaunchedEffect(msg) {
+                        kotlinx.coroutines.delay(3500)
+                        if (scanError == msg) scanError = null
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = 24.dp)
+                            .padding(bottom = 150.dp)
+                            .background(SystemRed.copy(alpha = 0.92f), RoundedCornerShape(16.dp))
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = msg,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
 
                 // Unified header: title capsule (right) + circular close capsule (left)
                 FloatingHeaderCapsule(

@@ -20,9 +20,9 @@ class SecurityPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_HIDE_CODES, false)
         set(value) = prefs.edit().putBoolean(KEY_HIDE_CODES, value).apply()
 
-    var cloudSyncEnabled: Boolean
-        get() = prefs.getBoolean(KEY_CLOUD_SYNC, true)
-        set(value) = prefs.edit().putBoolean(KEY_CLOUD_SYNC, value).apply()
+    var isFirstLaunch: Boolean
+        get() = prefs.getBoolean(KEY_FIRST_LAUNCH, true)
+        set(value) = prefs.edit().putBoolean(KEY_FIRST_LAUNCH, value).apply()
 
     companion object {
         const val AUTO_LOCK_IMMEDIATE = "فوراً"
@@ -37,6 +37,6 @@ class SecurityPreferences(context: Context) {
         private const val KEY_BIOMETRIC = "biometric_enabled"
         private const val KEY_AUTO_LOCK = "auto_lock_option"
         private const val KEY_HIDE_CODES = "hide_codes_when_locked"
-        private const val KEY_CLOUD_SYNC = "cloud_sync_enabled"
+        private const val KEY_FIRST_LAUNCH = "is_first_launch"
     }
 }

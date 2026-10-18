@@ -51,6 +51,7 @@ import com.example.ui.components.CapsuleCloseButton
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.components.CardShape
+import com.example.model.OnyxAccount
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
@@ -59,22 +60,29 @@ import com.example.ui.theme.SecondarySystemBackground
 import com.example.ui.theme.Separator
 import com.example.ui.theme.SystemBackground
 import com.example.ui.theme.SystemBlue
+import com.example.ui.theme.SystemRed
 import com.example.ui.theme.TertiaryLabel
 
 @Composable
 fun ManualEntryScreen(
     onCancel: () -> Unit,
-    onSave: (issuer: String, account: String, secret: String, algorithm: String, digits: Int, period: Int) -> Unit,
+    /** Returns null on success or an error message to show. */
+    onSave: (issuer: String, account: String, secret: String, algorithm: String, digits: Int, period: Int) -> String?,
+    existing: OnyxAccount? = null,
     modifier: Modifier = Modifier
 ) {
-    var issuer by remember { mutableStateOf("Google") }
-    var accountName by remember { mutableStateOf("user@example.com") }
-    var secretKey by remember { mutableStateOf("JBSWY3DPEHPK3PXP") }
+    // Nothing is pre-filled for a new account. In edit mode the real account values are loaded.
+    var issuer by remember { mutableStateOf(existing?.issuer ?: "") }
+    var accountName by remember { mutableStateOf(existing?.accountName ?: "") }
+    var secretKey by remember { mutableStateOf(existing?.secret ?: "") }
     var isSecretVisible by remember { mutableStateOf(false) }
 
-    var algorithm by remember { mutableStateOf("SHA-1") }
-    var digits by remember { mutableIntStateOf(6) }
-    var period by remember { mutableIntStateOf(30) }
+    var algorithm by remember { mutableStateOf(existing?.algorithm ?: "SHA-1") }
+    var digits by remember { mutableIntStateOf(existing?.digits ?: 6) }
+    var period by remember { mutableIntStateOf(existing?.period ?: 30) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val isEdit = existing != null
+    val canSave = issuer.isNotBlank() && accountName.isNotBlank() && secretKey.isNotBlank()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(
@@ -90,7 +98,7 @@ fun ManualEntryScreen(
                     .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
                 Text(
-                    text = "أدخل بيانات حسابك يدوياً",
+                    text = if (isEdit) "عدّل بيانات الحساب ثم احفظ" else "أدخل بيانات حسابك يدوياً",
                     fontFamily = InterFontFamily,
                     fontSize = 15.sp,
                     color = SecondaryLabel,
@@ -172,7 +180,11 @@ fun ManualEntryScreen(
                                 cursorBrush = SolidColor(SystemBlue),
                                 modifier = Modifier
                                     .testTag("input_account_name")
-                                    .weight(1f)
+                                    .weight(1f),
+                                decorationBox = { inner ->
+                                    if (accountName.isEmpty()) Text(text = "name@email.com", fontFamily = JetBrainsMonoFontFamily, fontSize = 14.sp, color = TertiaryLabel)
+                                    inner()
+                                }
                             )
                         }
                     }
@@ -209,7 +221,11 @@ fun ManualEntryScreen(
                                 cursorBrush = SolidColor(SystemBlue),
                                 modifier = Modifier
                                     .testTag("input_secret_key")
-                                    .weight(1f)
+                                    .weight(1f),
+                                decorationBox = { inner ->
+                                    if (secretKey.isEmpty()) Text(text = "Base32 key", fontFamily = JetBrainsMonoFontFamily, fontSize = 14.sp, color = TertiaryLabel)
+                                    inner()
+                                }
                             )
                         }
                         IconButton(
@@ -298,24 +314,44 @@ fun ManualEntryScreen(
 
                     HorizontalDivider(thickness = 0.5.dp, color = Separator, modifier = Modifier.padding(horizontal = 16.dp))
 
-                    // Period Row (30s)
+                    // Period Row (cycles 30 → 60 → 90 → 15 → 30)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp)
+                            .clickable {
+                                period = when (period) {
+                                    30 -> 60
+                                    60 -> 90
+                                    90 -> 15
+                                    else -> 30
+                                }
+                            }
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = "الفترة", fontFamily = InterFontFamily, fontSize = 16.sp, color = Label)
-                        Text(text = "$period ثانية", fontFamily = InterFontFamily, fontSize = 15.sp, color = SecondaryLabel)
+                        Text(text = "$period ثانية", fontFamily = JetBrainsMonoFontFamily, fontSize = 15.sp, color = SystemBlue)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                errorMessage?.let { msg ->
+                    Text(
+                        text = msg,
+                        fontFamily = InterFontFamily,
+                        fontSize = 13.sp,
+                        color = SystemRed,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+
                 Text(
-                    text = "يتم تشفير وتخزين المفتاح محلياً على هذا الجهاز باستخدام تقنية الحماية الآمنة.",
+                    text = "يُخزَّن المفتاح مشفّراً على هذا الجهاز عبر Android Keystore ولا يغادره.",
                     fontFamily = InterFontFamily,
                     fontSize = 12.sp,
                     color = TertiaryLabel,
@@ -330,8 +366,9 @@ fun ManualEntryScreen(
                 // Bottom CTA Button - inside scroll for consistency with other capsule screens
                 Button(
                     onClick = {
-                        onSave(issuer, accountName, secretKey, algorithm, digits, period)
+                        errorMessage = onSave(issuer, accountName, secretKey, algorithm, digits, period)
                     },
+                    enabled = canSave,
                     modifier = Modifier
                         .testTag("manual_entry_bottom_add_button")
                         .fillMaxWidth()
@@ -339,12 +376,14 @@ fun ManualEntryScreen(
                     shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
-                        contentColor = Label
+                        contentColor = Label,
+                        disabledContainerColor = SystemBlue.copy(alpha = 0.35f),
+                        disabledContentColor = Label.copy(alpha = 0.6f)
                     ),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
                 ) {
                     Text(
-                        text = "إضافة الحساب",
+                        text = if (isEdit) "حفظ التعديلات" else "إضافة الحساب",
                         fontFamily = InterFontFamily,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 17.sp,
@@ -360,7 +399,7 @@ fun ManualEntryScreen(
 
             // Floating Top Header Capsule - NEW CAPSULE SYSTEM
             FloatingHeaderCapsule(
-                title = "حساب جديد",
+                title = if (isEdit) "تعديل الحساب" else "حساب جديد",
                 trailingIcon = {
                     CapsuleCloseButton(onClick = onCancel, testTag = "manual_entry_cancel_button", contentDescription = "إلغاء")
                 },

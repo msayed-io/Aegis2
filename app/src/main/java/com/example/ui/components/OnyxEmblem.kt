@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.ui.theme.SystemBlue
 
 @Composable
-fun AegisEmblem(
+fun OnyxEmblem(
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
     tint: Color = SystemBlue,

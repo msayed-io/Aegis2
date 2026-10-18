@@ -39,7 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.AegisAccount
+import com.example.model.OnyxAccount
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
@@ -55,7 +55,7 @@ import com.example.ui.theme.TertiarySystemBackground
  */
 @Composable
 fun AccountCodeCard(
-    account: AegisAccount,
+    account: OnyxAccount,
     formattedCode: String,
     remainingSeconds: Int,
     isCopied: Boolean,

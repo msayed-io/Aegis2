@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.components.AegisEmblem
+import com.example.ui.components.OnyxEmblem
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.Label
 import com.example.ui.theme.SecondaryLabel
@@ -61,14 +61,14 @@ fun WelcomeScreen(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.weight(1f)
             ) {
-                // Aegis Symbol
+                // Onyx Symbol
                 Box(
                     modifier = Modifier
                         .size(112.dp)
                         .background(SecondarySystemBackground, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    AegisEmblem(
+                    OnyxEmblem(
                         size = 56.dp,
                         tint = SystemBlue,
                         strokeWidth = 3.6f,

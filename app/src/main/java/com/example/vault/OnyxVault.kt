@@ -1,6 +1,6 @@
 package com.example.vault
 
-import com.example.model.AegisAccount
+import com.example.model.OnyxAccount
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -43,7 +43,7 @@ object OnyxVault {
         return "Onyx-Vault-$ts.$EXTENSION"
     }
 
-    fun export(accounts: List<AegisAccount>, password: CharArray): ByteArray {
+    fun export(accounts: List<OnyxAccount>, password: CharArray): ByteArray {
         val payload = JSONObject().apply {
             put("app", "Onyx")
             put("format", 1)
@@ -73,7 +73,7 @@ object OnyxVault {
         return out.toByteArray()
     }
 
-    fun import(bytes: ByteArray, password: CharArray): List<AegisAccount> {
+    fun import(bytes: ByteArray, password: CharArray): List<OnyxAccount> {
         if (bytes.size < MAGIC.size + 1 + SALT_LEN + IV_LEN + 16) throw VaultException("الملف ليس خزنة Onyx صالحة")
         val d = DataInputStream(bytes.inputStream())
         val magic = ByteArray(2).also { d.readFully(it) }
@@ -96,7 +96,7 @@ object OnyxVault {
         val arr = json.getJSONArray("accounts")
         return List(arr.length()) { i ->
             val o = arr.getJSONObject(i)
-            AegisAccount(
+            OnyxAccount(
                 id = o.optString("id", "acc_${System.currentTimeMillis()}_$i"),
                 issuer = o.optString("issuer"),
                 accountName = o.optString("accountName"),

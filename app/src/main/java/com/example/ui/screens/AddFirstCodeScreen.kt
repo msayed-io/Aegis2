@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
-import com.example.ui.components.AegisEmblem
+import com.example.ui.components.OnyxEmblem
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingCapsuleHeader
 import com.example.ui.components.TopVignetteOverlay
@@ -240,7 +240,7 @@ fun AddFirstCodeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        AegisEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
+                        OnyxEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
                         Text(
                             text = "Onyx",
                             fontFamily = InterFontFamily,

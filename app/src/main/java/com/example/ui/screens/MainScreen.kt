@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
-import com.example.model.AegisAccount
+import com.example.model.OnyxAccount
 import com.example.ui.components.AccountCodeCard
-import com.example.ui.components.AegisEmblem
+import com.example.ui.components.OnyxEmblem
 import com.example.ui.components.CopiedToast
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingBottomNavCapsule
@@ -42,11 +42,15 @@ import com.example.ui.theme.*
 
 @Composable
 fun MainScreen(
-    accounts: List<AegisAccount>,
+    accounts: List<OnyxAccount>,
     currentTimeSeconds: Long,
     copiedCodeId: String?,
-    onAccountClick: (AegisAccount) -> Unit,
-    onCopyCode: (AegisAccount) -> Unit,
+    /** When true, codes are hidden behind dots until the card is tapped once. */
+    hideCodes: Boolean = false,
+    revealedCodeId: String? = null,
+    onRevealCode: (OnyxAccount) -> Unit = {},
+    onAccountClick: (OnyxAccount) -> Unit,
+    onCopyCode: (OnyxAccount) -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onScanQrClick: () -> Unit,
@@ -125,23 +129,27 @@ fun MainScreen(
                                 .background(SecondarySystemBackground, CardShape)
                         ) {
                             accounts.forEachIndexed { index, account ->
-                                val code = TotpGenerator.generateTotp(
+                                val code = TotpGenerator.generateTotpOrNull(
                                     secretBase32 = account.secret,
                                     timeSeconds = currentTimeSeconds,
                                     period = account.period,
                                     digits = account.digits,
                                     algorithm = account.algorithm
                                 )
-                                val formattedCode = TotpGenerator.formatCodeWithDot(code)
+                                val formattedCode = code?.let { TotpGenerator.formatCodeWithDot(it) } ?: TotpGenerator.INVALID_CODE_LABEL
                                 val remainingSeconds = TotpGenerator.getRemainingSeconds(account.period, currentTimeSeconds)
                                 val isCopied = copiedCodeId == account.id
+                                val masked = hideCodes && revealedCodeId != account.id && code != null
+                                val shownCode = if (masked) {
+                                    if (account.digits == 8) "•••• · ••••" else "••• · •••"
+                                } else formattedCode
 
                                 AccountCodeCard(
                                     account = account,
-                                    formattedCode = formattedCode,
+                                    formattedCode = shownCode,
                                     remainingSeconds = remainingSeconds,
                                     isCopied = isCopied,
-                                    onCopy = { onCopyCode(account) },
+                                    onCopy = { if (masked) onRevealCode(account) else onCopyCode(account) },
                                     onOpenDetails = { onAccountClick(account) }
                                 )
 
@@ -171,7 +179,7 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        AegisEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
+                        OnyxEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
                         Text(
                             text = "Onyx",
                             fontFamily = InterFontFamily,

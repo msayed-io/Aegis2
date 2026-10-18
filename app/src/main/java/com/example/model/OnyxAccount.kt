@@ -1,6 +1,6 @@
 package com.example.model
 
-data class AegisAccount(
+data class OnyxAccount(
     val id: String,
     val issuer: String,
     val accountName: String,
@@ -8,7 +8,7 @@ data class AegisAccount(
     val algorithm: String = "SHA-1",
     val digits: Int = 6,
     val period: Int = 30,
-    val addedDate: String = "12 مارس 2024"
+    val addedDate: String = ""
 ) {
     val badgeLetter: String
         get() = when {

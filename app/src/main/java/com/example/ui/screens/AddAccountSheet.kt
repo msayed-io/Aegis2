@@ -142,7 +142,7 @@ fun AddAccountSheet(
 
                 SheetOptionRow(
                     icon = Icons.Outlined.CloudDownload,
-                    title = "استيراد من تطبيق آخر",
+                    title = "استيراد خزنة Onyx (.ox)",
                     testTag = "option_import_other",
                     onClick = {
                         onDismiss()

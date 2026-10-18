@@ -10,11 +10,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import com.example.ui.theme.SecondaryLabel
+import com.example.ui.theme.SystemBlue
+import com.example.ui.theme.SystemRed
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -27,7 +36,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
-import com.example.model.AegisAccount
+import com.example.model.OnyxAccount
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.CapsuleCloseButton
 import com.example.ui.components.FloatingHeaderCapsule
@@ -37,22 +46,24 @@ import com.example.ui.theme.*
 
 @Composable
 fun CodeDetailScreen(
-    account: AegisAccount,
+    account: OnyxAccount,
     currentTimeSeconds: Long,
     isCopied: Boolean,
     onBack: () -> Unit,
     onCopy: () -> Unit,
     onEdit: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val code = TotpGenerator.generateTotp(
+    val code = TotpGenerator.generateTotpOrNull(
         secretBase32 = account.secret,
         timeSeconds = currentTimeSeconds,
         period = account.period,
         digits = account.digits,
         algorithm = account.algorithm
     )
-    val formattedCode = TotpGenerator.formatCodeWithDot(code)
+    val formattedCode = code?.let { TotpGenerator.formatCodeWithDot(it) } ?: TotpGenerator.INVALID_CODE_LABEL
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val remainingSeconds = TotpGenerator.getRemainingSeconds(account.period, currentTimeSeconds)
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -236,11 +247,64 @@ fun CodeDetailScreen(
                         HorizontalDivider(thickness = 0.5.dp, color = Separator, modifier = Modifier.padding(horizontal = 16.dp))
                         DetailRow(label = "الفترة", value = "${account.period} ثانية", isCode = false)
                         HorizontalDivider(thickness = 0.5.dp, color = Separator, modifier = Modifier.padding(horizontal = 16.dp))
-                        DetailRow(label = "أُضيف في", value = account.addedDate, isCode = false)
+                        DetailRow(label = "أُضيف في", value = account.addedDate.ifBlank { "—" }, isCode = false)
                     }
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Destructive action — real deletion with confirmation.
+                Button(
+                    onClick = { showDeleteConfirm = true },
+                    modifier = Modifier
+                        .testTag("detail_delete_button")
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(percent = 50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = SystemRed.copy(alpha = 0.14f),
+                        contentColor = SystemRed
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(0.dp)
+                ) {
+                    Text(
+                        text = "حذف الحساب",
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 17.sp,
+                        color = SystemRed
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            if (showDeleteConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteConfirm = false },
+                    containerColor = SecondarySystemBackground,
+                    shape = CardShape,
+                    title = {
+                        Text(text = "حذف ${account.issuer}؟", fontFamily = InterFontFamily, fontWeight = FontWeight.Bold, color = Label)
+                    },
+                    text = {
+                        Text(
+                            text = "سيُحذف هذا الحساب نهائياً من Onyx. تأكد أن لديك طريقة أخرى لتسجيل الدخول أو نسخة احتياطية قبل المتابعة.",
+                            fontFamily = InterFontFamily,
+                            color = SecondaryLabel
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showDeleteConfirm = false; onDelete() }, modifier = Modifier.testTag("detail_delete_confirm")) {
+                            Text(text = "حذف", fontFamily = InterFontFamily, fontWeight = FontWeight.SemiBold, color = SystemRed)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteConfirm = false }) {
+                            Text(text = "إلغاء", fontFamily = InterFontFamily, color = SystemBlue)
+                        }
+                    }
+                )
             }
 
             // Top Vignette Overlay
