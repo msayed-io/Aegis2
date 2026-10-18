@@ -227,35 +227,23 @@ fun SettingsScreen(
                 ) {
                     Row(
                         modifier = Modifier
+                            .testTag("settings_backup_row")
                             .fillMaxWidth()
                             .height(52.dp)
+                            .clickable { onNavigateToBackupSync() }
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Icon(Icons.Outlined.Security, null, tint = Label, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text(text = "النسخ الاحتياطي المشفر", fontFamily = InterFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Label)
-                                Text(text = "محلي + سحابي آمن", fontFamily = InterFontFamily, fontSize = 11.sp, color = SecondaryLabel)
+                                Text(text = "خزنة Onyx المشفرة", fontFamily = InterFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Label)
+                                Text(text = "ملفات .ox محلية بتشفير AES-256", fontFamily = InterFontFamily, fontSize = 11.sp, color = SecondaryLabel)
                             }
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .background(SystemGreen.copy(alpha = 0.16f), RoundedCornerShape(percent = 50))
-                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                            ) {
-                                Text(text = "مفعّل", fontFamily = InterFontFamily, fontSize = 12.sp, color = SystemGreen, fontWeight = FontWeight.Medium)
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IosSwitch(
-                                checked = cloudSyncEnabled,
-                                onCheckedChange = onToggleCloudSync,
-                                testTag = "switch_cloud_sync"
-                            )
-                        }
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, null, tint = TertiaryLabel, modifier = Modifier.size(18.dp))
                     }
 
                     HorizontalDivider(thickness = 0.5.dp, color = Separator, modifier = Modifier.padding(horizontal = 16.dp))

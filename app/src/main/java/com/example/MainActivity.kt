@@ -257,10 +257,14 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                 }
 
                 is AegisScreen.BackupSync -> {
+                    val vaultResult by viewModel.vaultResult.collectAsState()
                     BackupSyncScreen(
-                        cloudSyncEnabled = cloudSyncEnabled,
                         accountsCount = accounts.size,
-                        onToggleCloudSync = { viewModel.toggleCloudSync(it) },
+                        folderManager = viewModel.vaultFolders,
+                        vaultResult = vaultResult,
+                        onExport = { viewModel.exportVault(it) },
+                        onImport = { uri, pwd -> viewModel.importVault(uri, pwd) },
+                        onClearResult = { viewModel.clearVaultResult() },
                         onBack = { viewModel.navigateTo(AegisScreen.Settings) }
                     )
                 }

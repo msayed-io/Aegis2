@@ -10,6 +10,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.crypto.TotpGenerator
 import com.example.model.AegisAccount
 import com.example.security.SecurityPreferences
+import com.example.data.AccountsStore
+import com.example.vault.OnyxVault
+import com.example.vault.VaultFolderManager
+import android.net.Uri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,10 +41,12 @@ sealed class AegisScreen {
 class AegisViewModel(application: Application) : AndroidViewModel(application) {
 
     private val securityPrefs = SecurityPreferences(application)
+    private val accountsStore = AccountsStore(application)
+    val vaultFolders = VaultFolderManager(application)
 
     private val initialAccounts = listOf<AegisAccount>()
 
-    private val _accounts = MutableStateFlow<List<AegisAccount>>(initialAccounts)
+    private val _accounts = MutableStateFlow<List<AegisAccount>>(emptyList())
     val accounts: StateFlow<List<AegisAccount>> = _accounts.asStateFlow()
 
     // Start LOCKED whenever biometric protection is enabled (persisted across launches).
@@ -74,6 +82,7 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
     val copiedCodeId: StateFlow<String?> = _copiedCodeId.asStateFlow()
 
     init {
+        _accounts.value = accountsStore.load()
         viewModelScope.launch {
             while (isActive) {
                 _currentTimeSeconds.value = System.currentTimeMillis() / 1000L
@@ -181,11 +190,13 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
             addedDate = "اليوم"
         )
         _accounts.value = listOf(newAccount) + _accounts.value
+        accountsStore.save(_accounts.value)
         _currentScreen.value = AegisScreen.Main
     }
 
     fun deleteAccount(accountId: String) {
         _accounts.value = _accounts.value.filterNot { it.id == accountId }
+        accountsStore.save(_accounts.value)
         if (_accounts.value.isEmpty()) {
             _currentScreen.value = AegisScreen.EmptyState
         } else {
@@ -200,6 +211,55 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearAllAccounts() {
         _accounts.value = emptyList()
+        accountsStore.save(_accounts.value)
         _currentScreen.value = AegisScreen.EmptyState
+    }
+
+    // ---- Vault export / import (.ox) --------------------------------------------------------
+
+    sealed class VaultResult {
+        data class Success(val message: String) : VaultResult()
+        data class Error(val message: String) : VaultResult()
+    }
+
+    private val _vaultResult = MutableStateFlow<VaultResult?>(null)
+    val vaultResult: StateFlow<VaultResult?> = _vaultResult.asStateFlow()
+    fun clearVaultResult() { _vaultResult.value = null }
+
+    /** Encrypts all accounts and writes them into the granted "Onyx" folder. */
+    fun exportVault(password: CharArray) {
+        viewModelScope.launch {
+            _vaultResult.value = try {
+                val path = withContext(Dispatchers.Default) {
+                    val bytes = OnyxVault.export(_accounts.value, password)
+                    withContext(Dispatchers.IO) { vaultFolders.writeVault(bytes) }
+                }
+                if (path != null) VaultResult.Success("تم حفظ الخزنة في $path")
+                else VaultResult.Error("تعذّر الكتابة في مجلد Onyx")
+            } catch (e: Exception) {
+                VaultResult.Error(e.message ?: "فشل التصدير")
+            } finally {
+                password.fill('\u0000')
+            }
+        }
+    }
+
+    /** Decrypts a picked .ox file and merges its accounts (existing ids are replaced). */
+    fun importVault(uri: Uri, password: CharArray) {
+        viewModelScope.launch {
+            _vaultResult.value = try {
+                val imported = withContext(Dispatchers.IO) {
+                    OnyxVault.import(vaultFolders.readBytes(uri), password)
+                }
+                val merged = (imported + _accounts.value).distinctBy { it.id }
+                _accounts.value = merged
+                accountsStore.save(merged)
+                VaultResult.Success("تم استيراد ${imported.size} حساب بنجاح")
+            } catch (e: Exception) {
+                VaultResult.Error(e.message ?: "فشل الاستيراد")
+            } finally {
+                password.fill('\u0000')
+            }
+        }
     }
 }
