@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -51,7 +51,7 @@ jobs:
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -92,7 +92,34 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
           test -s "$RUNNER_TEMP/release.keystore"
           keytool -list -keystore "$RUNNER_TEMP/release.keystore" \
-            -storepass "$ANDROID_KEYSTORE_PASSWORD" >/dev/null
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS" >/dev/null
+
+      - name: Verify signing-key continuity with the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          apksigner="$ANDROID_HOME/build-tools/$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner"
+          current_fingerprint="$(keytool -list -v -keystore "$RUNNER_TEMP/release.keystore" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" \
+            | awk -F': ' '/SHA.?256/ {print $2; exit}' | tr -d '[:space:]')"
+          test -n "$current_fingerprint"
+          latest_tag="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName' || true)"
+          if [ -n "$latest_tag" ]; then
+            mkdir -p "$RUNNER_TEMP/previous-release"
+            gh release download "$latest_tag" --repo "$GITHUB_REPOSITORY" \
+              --pattern '*.apk' --dir "$RUNNER_TEMP/previous-release"
+            previous_apk="$(find "$RUNNER_TEMP/previous-release" -type f -name '*.apk' -print -quit)"
+            test -n "$previous_apk"
+            previous_fingerprint="$("$apksigner" verify --print-certs "$previous_apk" \
+              | awk -F': ' '/certificate SHA-256 digest:/ {print $2; exit}' | tr -d '[:space:]')"
+            test -n "$previous_fingerprint"
+            test "$current_fingerprint" = "$previous_fingerprint"
+            echo "Signing certificate matches latest release $latest_tag."
+          else
+            echo "No previous release exists; continuity check skipped."
+          fi
 
       - name: Build signed APK and AAB
         env:
@@ -105,14 +132,17 @@ jobs:
             -PversionName=${{ steps.version.outputs.version_name }}
 
       - name: Verify release outputs and signing metadata
-        env:
-          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
         run: |
           set -euo pipefail
-          apk="$(find app/build/outputs/apk/release -type f -name '*.apk' -print -quit)"
-          aab="$(find app/build/outputs/bundle/release -type f -name '*.aab' -print -quit)"
-          test -n "$apk"
-          test -n "$aab"
+          apk_source="$(find app/build/outputs/apk/release -type f -name '*.apk' -print -quit)"
+          aab_source="$(find app/build/outputs/bundle/release -type f -name '*.aab' -print -quit)"
+          test -n "$apk_source"
+          test -n "$aab_source"
+          mkdir -p release-files
+          apk="release-files/Onyx-${{ steps.version.outputs.version_name }}.apk"
+          aab="release-files/Onyx-${{ steps.version.outputs.version_name }}.aab"
+          cp "$apk_source" "$apk"
+          cp "$aab_source" "$aab"
           test "$(stat -c '%s' "$apk")" -gt 0
           test "$(stat -c '%s' "$aab")" -gt 0
           "$ANDROID_HOME/build-tools/$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --verbose "$apk"
@@ -121,10 +151,10 @@ jobs:
       - name: Upload durable CI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Aegis-${{ steps.version.outputs.tag }}-${{ github.sha }}
+          name: Onyx-${{ steps.version.outputs.tag }}-${{ github.sha }}
           path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/bundle/release/*.aab
+            release-files/*.apk
+            release-files/*.aab
             release-checksums.txt
           if-no-files-found: error
           retention-days: 30
@@ -139,10 +169,10 @@ jobs:
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Aegis $VERSION_NAME" \
+            --title "Onyx $VERSION_NAME" \
             --generate-notes \
-            app/build/outputs/apk/release/*.apk \
-            app/build/outputs/bundle/release/*.aab \
+            release-files/*.apk \
+            release-files/*.aab \
             release-checksums.txt
 
       - name: Remove signing material
