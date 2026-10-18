@@ -106,7 +106,7 @@ fun EmptyStateScreen(
                         .testTag("empty_add_first_button")
                         .fillMaxWidth()
                         .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
                         contentColor = Label
@@ -139,7 +139,7 @@ fun EmptyStateScreen(
                         .testTag("empty_import_button")
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SecondarySystemBackground,
                         contentColor = SystemBlue

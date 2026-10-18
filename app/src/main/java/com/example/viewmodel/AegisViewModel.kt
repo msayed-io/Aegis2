@@ -49,9 +49,13 @@ class AegisViewModel : ViewModel() {
     private val _currentTimeSeconds = MutableStateFlow(System.currentTimeMillis() / 1000L)
     val currentTimeSeconds: StateFlow<Long> = _currentTimeSeconds.asStateFlow()
 
-    // Settings
-    private val _faceIdEnabled = MutableStateFlow(true)
-    val faceIdEnabled: StateFlow<Boolean> = _faceIdEnabled.asStateFlow()
+    // Settings - Android Biometric (was Face ID / iCloud)
+    private val _biometricEnabled = MutableStateFlow(true)
+    val biometricEnabled: StateFlow<Boolean> = _biometricEnabled.asStateFlow()
+
+    // Legacy aliases for backward compatibility during migration
+    val faceIdEnabled: StateFlow<Boolean> get() = biometricEnabled
+    fun toggleFaceId(enabled: Boolean) { toggleBiometric(enabled) }
 
     private val _autoLockOption = MutableStateFlow("فوراً")
     val autoLockOption: StateFlow<String> = _autoLockOption.asStateFlow()
@@ -59,14 +63,16 @@ class AegisViewModel : ViewModel() {
     private val _hideCodesWhenLocked = MutableStateFlow(false)
     val hideCodesWhenLocked: StateFlow<Boolean> = _hideCodesWhenLocked.asStateFlow()
 
-    private val _iCloudSyncEnabled = MutableStateFlow(true)
-    val iCloudSyncEnabled: StateFlow<Boolean> = _iCloudSyncEnabled.asStateFlow()
+    private val _cloudSyncEnabled = MutableStateFlow(true)
+    val cloudSyncEnabled: StateFlow<Boolean> = _cloudSyncEnabled.asStateFlow()
+    // Legacy aliases
+    val iCloudSyncEnabled: StateFlow<Boolean> get() = cloudSyncEnabled
+    fun toggleICloudSync(enabled: Boolean) { toggleCloudSync(enabled) }
 
     private val _copiedCodeId = MutableStateFlow<String?>(null)
     val copiedCodeId: StateFlow<String?> = _copiedCodeId.asStateFlow()
 
     init {
-        // Periodic 1-second ticker for precise TOTP countdowns
         viewModelScope.launch {
             while (isActive) {
                 _currentTimeSeconds.value = System.currentTimeMillis() / 1000L
@@ -79,24 +85,13 @@ class AegisViewModel : ViewModel() {
         _currentScreen.value = screen
     }
 
-    fun showAddSheet() {
-        _isAddSheetVisible.value = true
-    }
+    fun showAddSheet() { _isAddSheetVisible.value = true }
+    fun hideAddSheet() { _isAddSheetVisible.value = false }
+    fun setSearchQuery(query: String) { _searchQuery.value = query }
+    fun clearSearchQuery() { _searchQuery.value = "" }
 
-    fun hideAddSheet() {
-        _isAddSheetVisible.value = false
-    }
-
-    fun setSearchQuery(query: String) {
-        _searchQuery.value = query
-    }
-
-    fun clearSearchQuery() {
-        _searchQuery.value = ""
-    }
-
-    fun toggleFaceId(enabled: Boolean) {
-        _faceIdEnabled.value = enabled
+    fun toggleBiometric(enabled: Boolean) {
+        _biometricEnabled.value = enabled
     }
 
     fun setAutoLockOption(option: String) {
@@ -107,8 +102,8 @@ class AegisViewModel : ViewModel() {
         _hideCodesWhenLocked.value = hide
     }
 
-    fun toggleICloudSync(enabled: Boolean) {
-        _iCloudSyncEnabled.value = enabled
+    fun toggleCloudSync(enabled: Boolean) {
+        _cloudSyncEnabled.value = enabled
     }
 
     fun copyCode(context: Context, account: AegisAccount) {

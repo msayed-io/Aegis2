@@ -37,9 +37,9 @@ import com.example.ui.theme.*
 
 @Composable
 fun BackupSyncScreen(
-    iCloudSyncEnabled: Boolean,
+    cloudSyncEnabled: Boolean,
     accountsCount: Int,
-    onToggleICloudSync: (Boolean) -> Unit,
+    onToggleCloudSync: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -56,7 +56,7 @@ fun BackupSyncScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 76.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
                 // Large Title Header
                 Text(
@@ -80,7 +80,7 @@ fun BackupSyncScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
@@ -102,7 +102,7 @@ fun BackupSyncScreen(
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "iCloud",
+                                        text = "النسخ السحابي",
                                         fontFamily = InterFontFamily,
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 16.sp,
@@ -126,9 +126,9 @@ fun BackupSyncScreen(
                         }
 
                         IosSwitch(
-                            checked = iCloudSyncEnabled,
-                            onCheckedChange = onToggleICloudSync,
-                            testTag = "backup_switch_icloud"
+                            checked = cloudSyncEnabled,
+                            onCheckedChange = onToggleCloudSync,
+                            testTag = "backup_switch_cloud"
                         )
                     }
                 }
@@ -140,7 +140,7 @@ fun BackupSyncScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
@@ -210,7 +210,7 @@ fun BackupSyncScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
@@ -248,7 +248,7 @@ fun BackupSyncScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                         .padding(16.dp),
                     verticalAlignment = Alignment.Top
                 ) {
@@ -260,7 +260,7 @@ fun BackupSyncScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "يتم تشفير جميع النسخ الاحتياطية باستخدام مفتاح Secure Enclave قبل مغادرة الجهاز. لا يمكن لأحد قراءة رموزك بما في ذلك Apple أو Onyx.",
+                        text = "يتم تشفير جميع النسخ الاحتياطية باستخدام مفتاح Android Keystore مع StrongBox قبل مغادرة الجهاز. لا يمكن لأحد قراءة رموزك حتى Onyx نفسه لا يمكنه قراءتها.",
                         fontFamily = InterFontFamily,
                         fontSize = 13.sp,
                         color = SecondaryLabel,

@@ -5,31 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -37,17 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.ui.screens.AddAccountSheet
 import com.example.ui.screens.AddFirstCodeScreen
 import com.example.ui.screens.BackupSyncScreen
@@ -61,7 +35,6 @@ import com.example.ui.screens.SearchScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.TotpExplanationScreen
 import com.example.ui.screens.WelcomeScreen
-import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.MyApplicationTheme
 import com.example.viewmodel.AegisScreen
 import com.example.viewmodel.AegisViewModel
@@ -69,7 +42,13 @@ import com.example.viewmodel.AegisViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Hide status bar completely - immersive professional experience
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.statusBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
         setContent {
             val viewModel: AegisViewModel = viewModel()
             MyApplicationTheme {
@@ -79,7 +58,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AegisAppContent(viewModel: AegisViewModel) {
     val context = LocalContext.current
@@ -90,15 +68,13 @@ fun AegisAppContent(viewModel: AegisViewModel) {
     val currentTimeSeconds by viewModel.currentTimeSeconds.collectAsState()
     val copiedCodeId by viewModel.copiedCodeId.collectAsState()
 
-    // Settings
-    val faceIdEnabled by viewModel.faceIdEnabled.collectAsState()
+    val biometricEnabled by viewModel.biometricEnabled.collectAsState()
     val autoLockOption by viewModel.autoLockOption.collectAsState()
     val hideCodesWhenLocked by viewModel.hideCodesWhenLocked.collectAsState()
-    val iCloudSyncEnabled by viewModel.iCloudSyncEnabled.collectAsState()
+    val cloudSyncEnabled by viewModel.cloudSyncEnabled.collectAsState()
 
     var showScreenPickerSheet by remember { mutableStateOf(false) }
 
-    // System Back Handler based on current destination
     BackHandler(enabled = currentScreen !is AegisScreen.Main) {
         when (currentScreen) {
             is AegisScreen.CodeDetail,
@@ -216,14 +192,14 @@ fun AegisAppContent(viewModel: AegisViewModel) {
 
                 is AegisScreen.Settings -> {
                     SettingsScreen(
-                        faceIdEnabled = faceIdEnabled,
+                        faceIdEnabled = biometricEnabled,
                         autoLockOption = autoLockOption,
                         hideCodesWhenLocked = hideCodesWhenLocked,
-                        iCloudSyncEnabled = iCloudSyncEnabled,
-                        onToggleFaceId = { viewModel.toggleFaceId(it) },
+                        iCloudSyncEnabled = cloudSyncEnabled,
+                        onToggleFaceId = { viewModel.toggleBiometric(it) },
                         onAutoLockChange = { viewModel.setAutoLockOption(it) },
                         onToggleHideCodes = { viewModel.toggleHideCodes(it) },
-                        onToggleICloudSync = { viewModel.toggleICloudSync(it) },
+                        onToggleICloudSync = { viewModel.toggleCloudSync(it) },
                         onNavigateToBackupSync = { viewModel.navigateTo(AegisScreen.BackupSync) },
                         onBack = { viewModel.navigateTo(AegisScreen.Main) },
                         onOpenWelcome = { viewModel.navigateTo(AegisScreen.Welcome) },
@@ -233,9 +209,9 @@ fun AegisAppContent(viewModel: AegisViewModel) {
 
                 is AegisScreen.BackupSync -> {
                     BackupSyncScreen(
-                        iCloudSyncEnabled = iCloudSyncEnabled,
+                        cloudSyncEnabled = cloudSyncEnabled,
                         accountsCount = accounts.size,
-                        onToggleICloudSync = { viewModel.toggleICloudSync(it) },
+                        onToggleCloudSync = { viewModel.toggleCloudSync(it) },
                         onBack = { viewModel.navigateTo(AegisScreen.Settings) }
                     )
                 }
@@ -266,8 +242,6 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                 }
             }
 
-
-            // Add Account Bottom Sheet Modal
             if (isAddSheetVisible) {
                 AddAccountSheet(
                     onDismiss = { viewModel.hideAddSheet() },

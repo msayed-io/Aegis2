@@ -64,7 +64,7 @@ fun CodeDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 76.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
+                    .padding(top = 96.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -162,7 +162,7 @@ fun CodeDetailScreen(
                         .testTag("detail_copy_button")
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
                         contentColor = Label
@@ -195,7 +195,7 @@ fun CodeDetailScreen(
                         .testTag("detail_secondary_edit_button")
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SecondarySystemBackground,
                         contentColor = Label
@@ -226,7 +226,7 @@ fun CodeDetailScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                     ) {
                         DetailRow(label = "النوع", value = "TOTP · ${account.algorithm}", isCode = true)
                         HorizontalDivider(thickness = 0.5.dp, color = Separator, modifier = Modifier.padding(horizontal = 16.dp))

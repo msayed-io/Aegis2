@@ -97,7 +97,7 @@ fun AddFirstCodeScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SecondarySystemBackground, RoundedCornerShape(16.dp))
+                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -186,7 +186,7 @@ fun AddFirstCodeScreen(
                             .testTag("add_first_code_primary_button")
                             .fillMaxWidth()
                             .height(50.dp),
-                        shape = RoundedCornerShape(25.dp),
+                        shape = RoundedCornerShape(percent = 50),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = SystemBlue,
                             contentColor = Label

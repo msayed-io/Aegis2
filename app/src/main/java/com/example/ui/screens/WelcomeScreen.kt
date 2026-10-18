@@ -116,7 +116,7 @@ fun WelcomeScreen(
                         .testTag("welcome_continue_button")
                         .fillMaxWidth()
                         .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
                         contentColor = Label

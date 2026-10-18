@@ -119,7 +119,7 @@ fun MainScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(SecondarySystemBackground, RoundedCornerShape(16.dp))
+                                .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                         ) {
                             accounts.forEachIndexed { index, account ->
                                 val code = TotpGenerator.generateTotp(
@@ -205,7 +205,7 @@ fun MainScreen(
                     .testTag("fab_add_account")
                     .align(Alignment.BottomEnd)
                     .navigationBarsPadding()
-                    .padding(end = 20.dp, bottom = 92.dp)
+                    .padding(end = 20.dp, bottom = 100.dp)
                     .size(56.dp)
             ) {
                 Icon(

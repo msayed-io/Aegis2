@@ -74,7 +74,7 @@ fun TotpExplanationScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 76.dp, bottom = 32.dp, start = 20.dp, end = 20.dp),
+                    .padding(top = 96.dp, bottom = 32.dp, start = 20.dp, end = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -83,7 +83,7 @@ fun TotpExplanationScreen(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
-                        .background(SecondarySystemBackground, RoundedCornerShape(16.dp)),
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50)),
                     contentAlignment = Alignment.Center
                 ) {
                     AegisEmblem(size = 32.dp, tint = SystemBlue, strokeWidth = 2.5f)
@@ -116,7 +116,7 @@ fun TotpExplanationScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(16.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     // Module 1: Shared Key
                     Row(
@@ -305,7 +305,7 @@ fun TotpExplanationScreen(
                         .testTag("totp_math_continue_button")
                         .fillMaxWidth()
                         .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
                         contentColor = Label

@@ -13,15 +13,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Face
+import androidx.compose.material.icons.outlined.Fingerprint
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -37,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,8 +44,10 @@ import com.example.ui.components.AegisEmblem
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.Label
 import com.example.ui.theme.SecondaryLabel
+import com.example.ui.theme.SecondarySystemBackground
 import com.example.ui.theme.SystemBackground
 import com.example.ui.theme.SystemBlue
+import com.example.ui.theme.SystemGreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -62,30 +64,9 @@ fun LockScreen(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(SystemBackground)
-                .statusBarsPadding()
-                .navigationBarsPadding(),
+                .background(SystemBackground),
             contentAlignment = Alignment.Center
         ) {
-            // Status bar simulated time
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 28.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "9:41",
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
-                    color = Label
-                )
-            }
-
-            // Center Emblem & Lock Status
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -125,9 +106,26 @@ fun LockScreen(
                     fontSize = 17.sp,
                     color = SecondaryLabel
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Outlined.Security, null, tint = SystemGreen, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "محمي بواسطة القفل البيومتري لأندرويد",
+                        fontFamily = InterFontFamily,
+                        fontSize = 11.sp,
+                        color = SecondaryLabel
+                    )
+                }
             }
 
-            // Bottom Actions Container
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -135,7 +133,6 @@ fun LockScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Primary Action: Face ID Unlock Button (Pill 50dp height, #0A84FF)
                 Button(
                     onClick = {
                         scope.launch {
@@ -148,11 +145,11 @@ fun LockScreen(
                         }
                     },
                     modifier = Modifier
-                        .testTag("face_id_unlock_button")
+                        .testTag("biometric_unlock_button")
                         .fillMaxWidth()
-                        .height(50.dp)
+                        .height(52.dp)
                         .scale(buttonScale.value),
-                    shape = RoundedCornerShape(25.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
                         contentColor = Label
@@ -164,14 +161,14 @@ fun LockScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Face,
-                            contentDescription = "Face ID",
+                            imageVector = Icons.Outlined.Fingerprint,
+                            contentDescription = "بصمة",
                             modifier = Modifier.size(22.dp),
                             tint = Label
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "فتح باستخدام Face ID",
+                            text = "فتح بالقياسات الحيوية",
                             fontFamily = InterFontFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
@@ -180,15 +177,15 @@ fun LockScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Secondary Text Link: Use Passcode
                 Text(
-                    text = "استخدام رمز الدخول",
+                    text = "استخدام رمز الجهاز",
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     color = SystemBlue,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .testTag("passcode_unlock_button")
                         .clickable(
@@ -200,14 +197,15 @@ fun LockScreen(
                         .padding(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // iOS Native Home Indicator
-                Box(
-                    modifier = Modifier
-                        .width(138.dp)
-                        .height(5.dp)
-                        .background(Color.White.copy(alpha = 0.35f), CircleShape)
+                Text(
+                    text = "يستخدم مصادقة أندرويد الأصلية · بصمة الوجه والإصبع",
+                    fontFamily = InterFontFamily,
+                    fontSize = 11.sp,
+                    color = SecondaryLabel,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
         }

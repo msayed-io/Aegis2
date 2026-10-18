@@ -153,7 +153,7 @@ fun AddAccountSheet(
                     .testTag("add_sheet_cancel_button")
                     .fillMaxWidth()
                     .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(percent = 50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = TertiarySystemBackground,
                     contentColor = SystemBlue

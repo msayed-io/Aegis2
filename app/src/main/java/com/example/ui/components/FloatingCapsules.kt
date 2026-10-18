@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -33,10 +32,6 @@ import com.example.ui.theme.SystemBlue
 
 private val CapsuleShape = RoundedCornerShape(percent = 50)
 
-/**
- * A floating header with independent action capsules at the logical start/end edges.
- * The title stays centered and is deliberately not wrapped in a continuous toolbar surface.
- */
 @Composable
 fun FloatingHeaderCapsule(
     title: String,
@@ -80,7 +75,6 @@ fun FloatingHeaderCapsule(
     }
 }
 
-/** A top row made of two separately elevated capsules, with no shared background. */
 @Composable
 fun FloatingCapsuleHeader(
     startContent: (@Composable BoxScope.() -> Unit)? = null,
@@ -112,14 +106,12 @@ private fun FloatingHeaderFrame(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .height(48.dp),
         content = content
     )
 }
 
-/** Solid dark capsule with a fine specular edge and a restrained two-layer ambient shadow. */
 @Composable
 private fun FloatingCapsuleSurface(
     modifier: Modifier = Modifier,
@@ -156,7 +148,7 @@ private fun FloatingCapsuleSurface(
 
 @Composable
 fun FloatingBottomNavCapsule(
-    currentTab: Int, // 0: Auth, 1: Scan, 2: Settings
+    currentTab: Int,
     onScanClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onAuthClick: () -> Unit,
@@ -170,17 +162,18 @@ fun FloatingBottomNavCapsule(
             .padding(bottom = 16.dp),
         contentAlignment = Alignment.Center
     ) {
+        // FIXED: Shrunk for 2 items only (was 384dp for 3 items → now 220dp for 2)
         FloatingCapsuleSurface(
             modifier = Modifier
-                .widthIn(max = 384.dp)
+                .widthIn(max = 220.dp)
                 .fillMaxWidth()
-                .height(60.dp)
+                .height(52.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 FloatingNavItem(
@@ -189,15 +182,6 @@ fun FloatingBottomNavCapsule(
                     isActive = currentTab == 0,
                     onClick = onAuthClick,
                     testTag = "tab_auth",
-                    modifier = Modifier.weight(1f)
-                )
-
-                FloatingNavItem(
-                    icon = Icons.Outlined.QrCodeScanner,
-                    label = "مسح رمز",
-                    isActive = currentTab == 1,
-                    onClick = onScanClick,
-                    testTag = "tab_qr_scanner",
                     modifier = Modifier.weight(1f)
                 )
 
@@ -227,12 +211,12 @@ private fun FloatingNavItem(
 
     Row(
         modifier = modifier
-            .height(48.dp)
+            .height(44.dp)
             .testTag(testTag)
             .clip(CircleShape)
             .background(if (isActive) SystemBlue.copy(alpha = 0.12f) else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -243,12 +227,12 @@ private fun FloatingNavItem(
             modifier = Modifier.size(18.dp)
         )
         if (isActive) {
-            Spacer(modifier = Modifier.width(5.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = label,
                 fontFamily = InterFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 color = tint,
                 maxLines = 1
             )
@@ -261,12 +245,12 @@ fun TopVignetteOverlay() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(110.dp)
             .background(
                 Brush.verticalGradient(
-                    0.0f to SystemBackground.copy(alpha = 0.96f),
-                    0.38f to SystemBackground.copy(alpha = 0.62f),
-                    0.70f to SystemBackground.copy(alpha = 0.20f),
+                    0.0f to SystemBackground.copy(alpha = 0.98f),
+                    0.42f to SystemBackground.copy(alpha = 0.65f),
+                    0.72f to SystemBackground.copy(alpha = 0.18f),
                     1.0f to Color.Transparent
                 )
             )

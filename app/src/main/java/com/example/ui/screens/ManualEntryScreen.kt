@@ -85,7 +85,7 @@ fun ManualEntryScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 76.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
                 // Large Title Header (like BackupSync & Settings)
                 Text(
@@ -116,7 +116,7 @@ fun ManualEntryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     // Issuer Row
                     Row(
@@ -247,7 +247,7 @@ fun ManualEntryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     // Type Row
                     Row(
@@ -343,7 +343,7 @@ fun ManualEntryScreen(
                         .testTag("manual_entry_bottom_add_button")
                         .fillMaxWidth()
                         .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(percent = 50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SystemBlue,
                         contentColor = Label

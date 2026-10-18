@@ -10,14 +10,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.outlined.CloudDone
-import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Face
+import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LockReset
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,18 +61,17 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .background(SystemBackground)
         ) {
-            // Scrollable Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 76.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
-                // Profile Banner Card
+                // Profile Banner Card - Android Professional
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -106,14 +105,14 @@ fun SettingsScreen(
                             modifier = Modifier.padding(top = 2.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.CloudDone,
+                                imageVector = Icons.Outlined.VerifiedUser,
                                 contentDescription = null,
-                                tint = SystemBlue,
+                                tint = SystemGreen,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Onyx لـ iPhone · متصل بـ iCloud",
+                                text = "Onyx لأندرويد · الحماية البيومترية نشطة",
                                 fontFamily = InterFontFamily,
                                 fontSize = 12.sp,
                                 color = SecondaryLabel
@@ -131,30 +130,40 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section: الأمان
-                SectionHeader("الأمان")
+                // Section: الأمان - Android Biometric
+                SectionHeader("الأمان والخصوصية")
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Face, null, tint = Label, modifier = Modifier.size(20.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(SystemBlue.copy(alpha = 0.15f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Outlined.Fingerprint, null, tint = SystemBlue, modifier = Modifier.size(18.dp))
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = "القفل باستخدام Face ID", fontFamily = InterFontFamily, fontSize = 16.sp, color = Label)
+                            Column {
+                                Text(text = "القفل البيومتري", fontFamily = InterFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Label)
+                                Text(text = "بصمة الإصبع والوجه لأندرويد", fontFamily = InterFontFamily, fontSize = 11.sp, color = SecondaryLabel)
+                            }
                         }
                         IosSwitch(
                             checked = faceIdEnabled,
                             onCheckedChange = onToggleFaceId,
-                            testTag = "switch_face_id"
+                            testTag = "switch_biometric"
                         )
                     }
 
@@ -163,7 +172,7 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .clickable {
                                 onAutoLockChange(if (autoLockOption == "فوراً") "بعد دقيقة واحدة" else "فوراً")
                             }
@@ -188,7 +197,7 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -208,39 +217,42 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section: المزامنة والنسخ الاحتياطي
+                // Section: المزامنة والنسخ الاحتياطي - Android Native
                 SectionHeader("المزامنة والنسخ الاحتياطي")
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.CloudSync, null, tint = Label, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Outlined.Security, null, tint = Label, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = "مزامنة iCloud", fontFamily = InterFontFamily, fontSize = 16.sp, color = Label)
+                            Column {
+                                Text(text = "النسخ الاحتياطي المشفر", fontFamily = InterFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Label)
+                                Text(text = "محلي + سحابي آمن", fontFamily = InterFontFamily, fontSize = 11.sp, color = SecondaryLabel)
+                            }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .background(SystemGreen.copy(alpha = 0.16f), RoundedCornerShape(8.dp))
+                                    .background(SystemGreen.copy(alpha = 0.16f), RoundedCornerShape(percent = 50))
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
-                                Text(text = "مفعلة", fontFamily = InterFontFamily, fontSize = 12.sp, color = SystemGreen, fontWeight = FontWeight.Medium)
+                                Text(text = "مفعّل", fontFamily = InterFontFamily, fontSize = 12.sp, color = SystemGreen, fontWeight = FontWeight.Medium)
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             IosSwitch(
                                 checked = iCloudSyncEnabled,
                                 onCheckedChange = onToggleICloudSync,
-                                testTag = "switch_icloud_sync"
+                                testTag = "switch_cloud_sync"
                             )
                         }
                     }
@@ -251,7 +263,7 @@ fun SettingsScreen(
                         modifier = Modifier
                             .testTag("settings_export_vault_row")
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .clickable { onNavigateToBackupSync() }
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -260,7 +272,7 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.LockReset, null, tint = Label, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = "تصدير مشفر", fontFamily = InterFontFamily, fontSize = 16.sp, color = Label)
+                            Text(text = "إدارة النسخ", fontFamily = InterFontFamily, fontSize = 16.sp, color = Label)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(text = "Onyx Vault (.onyx)", fontFamily = InterFontFamily, fontSize = 14.sp, color = SecondaryLabel)
@@ -272,7 +284,7 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "يتم تشفير جميع النسخ الاحتياطية باستخدام خوارزمية AES-256 قبل مغادرة هذا الجهاز.",
+                    text = "يتم تشفير جميع النسخ باستخدام Android Keystore و StrongBox قبل مغادرة الجهاز.",
                     fontFamily = InterFontFamily,
                     fontSize = 12.sp,
                     color = TertiaryLabel,
@@ -282,17 +294,16 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section: أيقونة التطبيق
                 SectionHeader("المظهر")
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -306,7 +317,7 @@ fun SettingsScreen(
                             Box(
                                 modifier = Modifier
                                     .size(26.dp)
-                                    .background(TertiarySystemBackground, RoundedCornerShape(6.dp)),
+                                    .background(TertiarySystemBackground, RoundedCornerShape(percent = 50)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 AegisEmblem(size = 15.dp, tint = SystemBlue, strokeWidth = 1.6f)
@@ -319,18 +330,17 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section: صفحات التجربة
                 SectionHeader("التجربة والدليل")
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
                             .testTag("settings_welcome_row")
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .clickable { onOpenWelcome() }
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -346,7 +356,7 @@ fun SettingsScreen(
                         modifier = Modifier
                             .testTag("settings_totp_math_row")
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .clickable { onOpenTotpMath() }
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -359,17 +369,16 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Section: حول التطبيق
                 SectionHeader("حول التطبيق")
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -387,7 +396,7 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -403,7 +412,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Footer
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -415,7 +423,7 @@ fun SettingsScreen(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "جميع البيانات مشفرة محلياً بواسطة Secure Enclave",
+                        text = "مشفر محلياً بـ Android Keystore & StrongBox",
                         fontFamily = InterFontFamily,
                         fontSize = 11.sp,
                         color = SecondaryLabel
@@ -432,10 +440,8 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // Top Vignette Overlay
             TopVignetteOverlay()
 
-            // Floating Top Header Capsule
             FloatingHeaderCapsule(
                 title = "الإعدادات",
                 leadingIcon = {

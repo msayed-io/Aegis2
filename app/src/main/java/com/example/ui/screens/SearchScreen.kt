@@ -65,7 +65,7 @@ fun SearchScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 76.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
                 // Search Bar Box
                 item {
@@ -78,7 +78,7 @@ fun SearchScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(44.dp)
-                                .background(SecondarySystemBackground, RoundedCornerShape(12.dp))
+                                .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                                 .padding(horizontal = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -152,7 +152,7 @@ fun SearchScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SecondarySystemBackground, RoundedCornerShape(14.dp))
+                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
                     ) {
                         if (filtered.isEmpty()) {
                             Box(
