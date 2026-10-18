@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
-import com.example.ui.theme.LiquidGlassNav
+import com.example.ui.theme.DarkToolbarSurface
 import com.example.ui.theme.SecondaryLabel
 import com.example.ui.theme.SecondarySystemBackground
 import com.example.ui.theme.Separator
@@ -83,12 +83,12 @@ fun ManualEntryScreen(
                 .statusBarsPadding()
                 .navigationBarsPadding()
         ) {
-            // Liquid Glass Navigation Bar
+            // Solid dark navigation bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
-                    .background(LiquidGlassNav)
+                    .background(DarkToolbarSurface)
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically

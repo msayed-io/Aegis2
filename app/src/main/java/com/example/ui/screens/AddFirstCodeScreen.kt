@@ -43,7 +43,6 @@ import com.example.ui.components.CountdownRing
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
-import com.example.ui.theme.LiquidGlassNav
 import com.example.ui.theme.SecondaryLabel
 import com.example.ui.theme.SecondarySystemBackground
 import com.example.ui.theme.Separator
@@ -72,7 +71,7 @@ fun AddFirstCodeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Liquid Glass Top Bar
+            // Minimal top bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

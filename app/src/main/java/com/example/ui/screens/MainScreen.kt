@@ -7,13 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -36,7 +33,7 @@ import com.example.model.AegisAccount
 import com.example.ui.components.AegisEmblem
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingBottomNavCapsule
-import com.example.ui.components.FloatingHeaderCapsule
+import com.example.ui.components.FloatingCapsuleHeader
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.theme.*
 
@@ -59,56 +56,26 @@ fun MainScreen(
                 .fillMaxSize()
                 .background(SystemBackground)
         ) {
-            // Scrollable Content scrolling behind floating header and bottom nav
+            // The list scrolls beneath the floating header and the bottom controls.
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 76.dp, bottom = 96.dp, start = 16.dp, end = 16.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = 96.dp,
+                    bottom = 208.dp,
+                    start = 16.dp,
+                    end = 16.dp
+                )
             ) {
-                // Brand Headline & Search Row
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            AegisEmblem(
-                                size = 22.dp,
-                                tint = SystemBlue,
-                                strokeWidth = 3f
-                            )
-                            Text(
-                                text = "Aegis",
-                                fontFamily = InterFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 30.sp,
-                                color = Label,
-                                letterSpacing = (-0.5).sp
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .testTag("search_icon_button")
-                                .size(38.dp)
-                                .background(SecondarySystemBackground, CircleShape)
-                                .clickable { onSearchClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = "بحث في الرموز",
-                                tint = SecondaryLabel,
-                                modifier = Modifier.size(19.dp)
-                            )
-                        }
-                    }
+                    Text(
+                        text = "رموز التحقق",
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        color = Label,
+                        letterSpacing = (-0.5).sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                 }
 
                 // Subtitle Count & Sync Status
@@ -191,39 +158,43 @@ fun MainScreen(
             // Top Vignette Overlay for smooth scrolling behind floating header
             TopVignetteOverlay()
 
-            // Floating Top Header Capsule (zIndex = 50)
-            FloatingHeaderCapsule(
-                title = "رموز التحقق",
-                leadingIcon = {
-                    IconButton(
-                        onClick = onSettingsClick,
-                        modifier = Modifier.testTag("top_settings_button")
+            // Two distinct floating capsules: the brand on the right and search on the left.
+            FloatingCapsuleHeader(
+                startContent = {
+                    Row(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = "الإعدادات",
-                            tint = SecondaryLabel,
-                            modifier = Modifier.size(20.dp)
+                        AegisEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
+                        Text(
+                            text = "Aegis",
+                            fontFamily = InterFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Label
                         )
                     }
                 },
-                trailingIcon = {
+                endContent = {
                     IconButton(
-                        onClick = onAddClick,
-                        modifier = Modifier.testTag("top_add_button")
+                        onClick = onSearchClick,
+                        modifier = Modifier.testTag("search_icon_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "إضافة حساب",
-                            tint = SystemBlue,
-                            modifier = Modifier.size(22.dp)
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "بحث في الرموز",
+                            tint = SecondaryLabel,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 },
                 modifier = Modifier.align(Alignment.TopCenter)
             )
 
-            // Floating Action Button (FAB) at Bottom Right
+            // Keep one clear add action, lifted above the navigation capsule.
             FloatingActionButton(
                 onClick = onAddClick,
                 shape = CircleShape,
@@ -233,7 +204,8 @@ fun MainScreen(
                 modifier = Modifier
                     .testTag("fab_add_account")
                     .align(Alignment.BottomEnd)
-                    .padding(end = 20.dp, bottom = 80.dp)
+                    .navigationBarsPadding()
+                    .padding(end = 20.dp, bottom = 92.dp)
                     .size(56.dp)
             ) {
                 Icon(
