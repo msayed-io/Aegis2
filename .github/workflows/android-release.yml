@@ -101,21 +101,39 @@ jobs:
         run: |
           set -euo pipefail
           apksigner="$ANDROID_HOME/build-tools/$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner"
-          current_fingerprint="$(keytool -list -v -keystore "$RUNNER_TEMP/release.keystore" \
-            -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" \
-            | awk -F': ' '/SHA.?256/ {print $2; exit}' | tr -d '[:space:]')"
-          test -n "$current_fingerprint"
+          keytool_details="$(keytool -list -v -keystore "$RUNNER_TEMP/release.keystore" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS")"
+          current_fingerprint="$(printf '%s\n' "$keytool_details" \
+            | sed -nE 's/^[[:space:]]*SHA[-]?256:[[:space:]]*(.*)$/\1/p' \
+            | head -n 1 | tr -d '[:space:]')"
+          if [ -z "$current_fingerprint" ]; then
+            echo "Could not extract SHA-256 fingerprint from keytool output." >&2
+            exit 1
+          fi
+          echo "Current signing certificate fingerprint: $current_fingerprint"
           latest_tag="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName' || true)"
           if [ -n "$latest_tag" ]; then
             mkdir -p "$RUNNER_TEMP/previous-release"
             gh release download "$latest_tag" --repo "$GITHUB_REPOSITORY" \
               --pattern '*.apk' --dir "$RUNNER_TEMP/previous-release"
             previous_apk="$(find "$RUNNER_TEMP/previous-release" -type f -name '*.apk' -print -quit)"
-            test -n "$previous_apk"
-            previous_fingerprint="$("$apksigner" verify --print-certs "$previous_apk" \
-              | awk -F': ' '/certificate SHA-256 digest:/ {print $2; exit}' | tr -d '[:space:]')"
-            test -n "$previous_fingerprint"
-            test "$current_fingerprint" = "$previous_fingerprint"
+            if [ -z "$previous_apk" ]; then
+              echo "Could not find an APK in latest release $latest_tag." >&2
+              exit 1
+            fi
+            apksigner_details="$("$apksigner" verify --print-certs "$previous_apk")"
+            previous_fingerprint="$(printf '%s\n' "$apksigner_details" \
+              | sed -nE 's/.*certificate SHA-256 digest:[[:space:]]*(.*)$/\1/p' \
+              | head -n 1 | tr -d '[:space:]')"
+            if [ -z "$previous_fingerprint" ]; then
+              echo "Could not extract SHA-256 fingerprint from apksigner output." >&2
+              exit 1
+            fi
+            echo "Latest release $latest_tag certificate fingerprint: $previous_fingerprint"
+            if [ "$current_fingerprint" != "$previous_fingerprint" ]; then
+              echo "Signing key mismatch: refusing to create an incompatible update." >&2
+              exit 1
+            fi
             echo "Signing certificate matches latest release $latest_tag."
           else
             echo "No previous release exists; continuity check skipped."
