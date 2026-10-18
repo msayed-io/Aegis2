@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.CapsuleCloseButton
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.components.IosSwitch
@@ -59,21 +60,12 @@ fun BackupSyncScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
-                // Large Title Header
-                Text(
-                    text = "النسخ الاحتياطي والمزامنة",
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    color = Label,
-                    letterSpacing = (-0.5).sp
-                )
                 Text(
                     text = "رموزك محفوظة على هذا الجهاز أولًا",
                     fontFamily = InterFontFamily,
                     fontSize = 15.sp,
                     color = SecondaryLabel,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
+                    modifier = Modifier.padding(start = 8.dp, bottom = 16.dp)
                 )
 
                 // Group 1: السحابة المشفرة
@@ -278,30 +270,8 @@ fun BackupSyncScreen(
             // Floating Top Header Capsule
             FloatingHeaderCapsule(
                 title = "المزامنة والنسخ",
-                leadingIcon = {
-                    Row(
-                        modifier = Modifier
-                            .testTag("backup_back_button")
-                            .clickable { onBack() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                            contentDescription = "رجوع",
-                            tint = SystemBlue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                },
                 trailingIcon = {
-                    Text(
-                        text = "تم",
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = SystemBlue,
-                        modifier = Modifier.clickable { onBack() }
-                    )
+                    CapsuleCloseButton(onClick = onBack, testTag = "backup_back_button")
                 },
                 modifier = Modifier.align(Alignment.TopCenter)
             )

@@ -5,7 +5,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.SystemClock
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.crypto.TotpGenerator
@@ -154,10 +153,9 @@ class AegisViewModel(application: Application) : AndroidViewModel(application) {
         clipboard.setPrimaryClip(clip)
 
         _copiedCodeId.value = account.id
-        Toast.makeText(context, "تم نسخ الرمز: $code", Toast.LENGTH_SHORT).show()
 
         viewModelScope.launch {
-            delay(2000)
+            delay(1600)
             if (_copiedCodeId.value == account.id) {
                 _copiedCodeId.value = null
             }

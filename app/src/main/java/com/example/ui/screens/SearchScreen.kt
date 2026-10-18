@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
 import com.example.model.AegisAccount
 import com.example.ui.components.CountdownRing
+import com.example.ui.components.AccountCodeCard
+import com.example.ui.components.CopiedToast
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.components.CardShape
@@ -182,13 +184,13 @@ fun SearchScreen(
                                 val remainingSeconds = TotpGenerator.getRemainingSeconds(account.period, currentTimeSeconds)
                                 val isCopied = copiedCodeId == account.id
 
-                                SearchResultItem(
+                                AccountCodeCard(
                                     account = account,
                                     formattedCode = formattedCode,
                                     remainingSeconds = remainingSeconds,
                                     isCopied = isCopied,
-                                    onClick = { onAccountClick(account) },
-                                    onCopy = { onCopyCode(account) }
+                                    onCopy = { onCopyCode(account) },
+                                    onOpenDetails = { onAccountClick(account) }
                                 )
 
                                 if (index < filtered.size - 1) {
@@ -221,6 +223,11 @@ fun SearchScreen(
             TopVignetteOverlay()
 
             // Floating Top Header Capsule
+            CopiedToast(
+                visible = copiedCodeId != null,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
             FloatingHeaderCapsule(
                 title = "بحث",
                 trailingIcon = {
@@ -236,107 +243,6 @@ fun SearchScreen(
                 },
                 modifier = Modifier.align(Alignment.TopCenter)
             )
-        }
-    }
-}
-
-@Composable
-private fun SearchResultItem(
-    account: AegisAccount,
-    formattedCode: String,
-    remainingSeconds: Int,
-    isCopied: Boolean,
-    onClick: () -> Unit,
-    onCopy: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f, fill = false)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(TertiarySystemBackground, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = account.badgeLetter,
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = Label
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column {
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    Text(
-                        text = account.issuer,
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = Label
-                    )
-                    Text(
-                        text = account.accountName,
-                        fontFamily = InterFontFamily,
-                        fontSize = 13.sp,
-                        color = SecondaryLabel
-                    )
-                }
-            }
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            val codeColor = when {
-                remainingSeconds <= 1 -> SystemRed
-                remainingSeconds <= 5 -> SystemOrange
-                else -> Label
-            }
-
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                Text(
-                    text = formattedCode,
-                    fontFamily = JetBrainsMonoFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                    color = codeColor
-                )
-            }
-
-            CountdownRing(
-                remainingSeconds = remainingSeconds,
-                period = account.period,
-                size = 32.dp,
-                strokeWidth = 2.4.dp
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onCopy() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = if (isCopied) Icons.Outlined.Check else Icons.Outlined.ContentCopy,
-                    contentDescription = null,
-                    tint = if (isCopied) SystemGreen else SecondaryLabel,
-                    modifier = Modifier.size(19.dp)
-                )
-            }
         }
     }
 }

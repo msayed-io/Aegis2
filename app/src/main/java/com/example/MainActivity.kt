@@ -56,15 +56,33 @@ class MainActivity : FragmentActivity() {
         viewModel.onAppBackgrounded()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Hide status bar completely - immersive professional experience
-        enableEdgeToEdge()
+    /**
+     * Status bar policy. The system re-shows bars after the IME, dialogs (BiometricPrompt)
+     * or focus changes on many OEM skins, so this is re-applied on every focus gain / resume,
+     * not only once in onCreate.
+     */
+    private fun applyImmersiveStatusBar() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).apply {
             hide(WindowInsetsCompat.Type.statusBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyImmersiveStatusBar()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) applyImmersiveStatusBar()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        applyImmersiveStatusBar()
         setContent {
             MyApplicationTheme {
                 AegisAppContent(viewModel = viewModel)

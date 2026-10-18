@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
 import com.example.model.AegisAccount
 import com.example.ui.components.CountdownRing
+import com.example.ui.components.CapsuleCloseButton
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.components.CardShape
@@ -248,31 +249,8 @@ fun CodeDetailScreen(
             // Floating Top Header Capsule
             FloatingHeaderCapsule(
                 title = "الرمز",
-                leadingIcon = {
-                    Row(
-                        modifier = Modifier
-                            .testTag("detail_back_button")
-                            .clickable { onBack() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                            contentDescription = "رجوع",
-                            tint = SystemBlue,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                },
                 trailingIcon = {
-                    Text(
-                        text = "تعديل",
-                        fontFamily = InterFontFamily,
-                        fontSize = 16.sp,
-                        color = SystemBlue,
-                        modifier = Modifier
-                            .testTag("detail_edit_button")
-                            .clickable { onEdit() }
-                    )
+                    CapsuleCloseButton(onClick = onBack, testTag = "detail_back_button")
                 },
                 modifier = Modifier.align(Alignment.TopCenter)
             )

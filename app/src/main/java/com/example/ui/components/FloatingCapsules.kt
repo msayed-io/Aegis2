@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
@@ -77,12 +78,36 @@ fun FloatingHeaderCapsule(
 
         if (trailingIcon != null) {
             FloatingCapsuleSurface(modifier = Modifier.align(Alignment.CenterEnd)) {
-                Box(
-                    modifier = Modifier.padding(horizontal = 14.dp),
-                    contentAlignment = Alignment.Center
-                ) { trailingIcon() }
+                Box(contentAlignment = Alignment.Center) { trailingIcon() }
             }
         }
+    }
+}
+
+/**
+ * Unified close/back control: a perfect 48dp circle capsule with the iOS-style chevron.
+ * Pass it as `trailingIcon` of [FloatingHeaderCapsule]. Padding is zero so the capsule stays circular.
+ */
+@Composable
+fun CapsuleCloseButton(
+    onClick: () -> Unit,
+    testTag: String,
+    contentDescription: String = "رجوع"
+) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+            .testTag(testTag),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
+            contentDescription = contentDescription,
+            tint = SystemBlue,
+            modifier = Modifier.size(16.dp)
+        )
     }
 }
 

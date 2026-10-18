@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
 import com.example.model.AegisAccount
+import com.example.ui.components.AccountCodeCard
 import com.example.ui.components.AegisEmblem
+import com.example.ui.components.CopiedToast
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingBottomNavCapsule
 import com.example.ui.components.FloatingCapsuleHeader
@@ -134,13 +136,13 @@ fun MainScreen(
                                 val remainingSeconds = TotpGenerator.getRemainingSeconds(account.period, currentTimeSeconds)
                                 val isCopied = copiedCodeId == account.id
 
-                                AccountListItem(
+                                AccountCodeCard(
                                     account = account,
                                     formattedCode = formattedCode,
                                     remainingSeconds = remainingSeconds,
                                     isCopied = isCopied,
-                                    onClick = { onAccountClick(account) },
-                                    onCopy = { onCopyCode(account) }
+                                    onCopy = { onCopyCode(account) },
+                                    onOpenDetails = { onAccountClick(account) }
                                 )
 
                                 if (index < accounts.size - 1) {
@@ -217,6 +219,11 @@ fun MainScreen(
                 )
             }
 
+            CopiedToast(
+                visible = copiedCodeId != null,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
             // Floating Bottom Navigation Capsule (zIndex = 40)
             FloatingBottomNavCapsule(
                 currentTab = 0,
@@ -225,121 +232,6 @@ fun MainScreen(
                 onSettingsClick = onSettingsClick,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
-        }
-    }
-}
-
-@Composable
-private fun AccountListItem(
-    account: AegisAccount,
-    formattedCode: String,
-    remainingSeconds: Int,
-    isCopied: Boolean,
-    onClick: () -> Unit,
-    onCopy: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .testTag("account_item_${account.id}")
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f, fill = false)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(TertiarySystemBackground, RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = account.badgeLetter,
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Label
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column {
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    Text(
-                        text = account.issuer,
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = Label
-                    )
-                    Text(
-                        text = account.accountName,
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 13.sp,
-                        color = SecondaryLabel
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            val codeColor = when {
-                remainingSeconds <= 1 -> SystemRed
-                remainingSeconds <= 5 -> SystemOrange
-                else -> Label
-            }
-
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                Text(
-                    text = formattedCode,
-                    fontFamily = JetBrainsMonoFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    letterSpacing = 0.5.sp,
-                    color = codeColor
-                )
-            }
-
-            CountdownRing(
-                remainingSeconds = remainingSeconds,
-                period = account.period,
-                size = 32.dp,
-                strokeWidth = 2.6.dp
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clickable { onCopy() },
-                contentAlignment = Alignment.Center
-            ) {
-                if (isCopied) {
-                    Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = "تم النسخ",
-                        tint = SystemGreen,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.ContentCopy,
-                        contentDescription = "نسخ الرمز",
-                        tint = SecondaryLabel,
-                        modifier = Modifier.size(19.dp)
-                    )
-                }
-            }
         }
     }
 }

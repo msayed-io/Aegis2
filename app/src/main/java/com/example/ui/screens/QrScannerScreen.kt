@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.camera.QrScannerEngine
+import com.example.ui.components.CapsuleCloseButton
+import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.Label
 import com.example.ui.theme.SecondaryLabel
@@ -135,46 +136,14 @@ fun QrScannerScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Top Capsule Header - consistent with new design
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .size(44.dp)
-                            .shadow(8.dp, CircleShape, ambientColor = Color.Black.copy(0.4f))
-                            .background(SecondarySystemBackground, CircleShape)
-                            .clickable { onClose() }
-                            .testTag("scanner_close_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = "إغلاق",
-                            tint = Label,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .shadow(8.dp, RoundedCornerShape(percent = 50), ambientColor = Color.Black.copy(0.4f))
-                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-                        Text(
-                            text = "مسح رمز QR",
-                            fontFamily = InterFontFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                            color = Label
-                        )
-                    }
-                }
+                // Unified header: title capsule (right) + circular close capsule (left)
+                FloatingHeaderCapsule(
+                    title = "مسح رمز QR",
+                    trailingIcon = {
+                        CapsuleCloseButton(onClick = onClose, testTag = "scanner_close_button", contentDescription = "إغلاق")
+                    },
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
 
                 // Viewfinder Reticle Overlay
                 Column(
@@ -229,44 +198,6 @@ fun QrScannerScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .shadow(6.dp, RoundedCornerShape(percent = 50))
-                            .background(SecondarySystemBackground.copy(alpha = 0.92f), RoundedCornerShape(percent = 50))
-                            .padding(horizontal = 14.dp, vertical = 8.dp)
-                    ) {
-                        Text(
-                            text = "ضع رمز QR داخل الإطار",
-                            fontFamily = InterFontFamily,
-                            fontSize = 13.sp,
-                            color = Label
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "يقرأ Onyx رموز ",
-                            fontFamily = InterFontFamily,
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = "otpauth://",
-                            fontFamily = InterFontFamily,
-                            fontSize = 12.sp,
-                            color = SystemBlue
-                        )
-                        Text(
-                            text = " فورًا",
-                            fontFamily = InterFontFamily,
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                    }
                 }
 
                 // Bottom Action Area

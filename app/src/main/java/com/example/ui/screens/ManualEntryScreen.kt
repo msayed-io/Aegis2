@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.CapsuleCloseButton
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.components.CardShape
@@ -88,21 +89,12 @@ fun ManualEntryScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
-                // Large Title Header (like BackupSync & Settings)
-                Text(
-                    text = "حساب جديد",
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    color = Label,
-                    letterSpacing = (-0.5).sp
-                )
                 Text(
                     text = "أدخل بيانات حسابك يدوياً",
                     fontFamily = InterFontFamily,
                     fontSize = 15.sp,
                     color = SecondaryLabel,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
+                    modifier = Modifier.padding(start = 8.dp, bottom = 16.dp)
                 )
 
                 // Section 1: بيانات الحساب
@@ -369,43 +361,8 @@ fun ManualEntryScreen(
             // Floating Top Header Capsule - NEW CAPSULE SYSTEM
             FloatingHeaderCapsule(
                 title = "حساب جديد",
-                leadingIcon = {
-                    Row(
-                        modifier = Modifier
-                            .testTag("manual_entry_cancel_button")
-                            .clickable { onCancel() }
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = SystemBlue,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text(
-                            text = "إلغاء",
-                            fontFamily = InterFontFamily,
-                            fontSize = 16.sp,
-                            color = SystemBlue
-                        )
-                    }
-                },
                 trailingIcon = {
-                    Text(
-                        text = "إضافة",
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = SystemBlue,
-                        modifier = Modifier
-                            .testTag("manual_entry_top_save_button")
-                            .clickable {
-                                onSave(issuer, accountName, secretKey, algorithm, digits, period)
-                            }
-                            .padding(horizontal = 8.dp, vertical = 6.dp)
-                    )
+                    CapsuleCloseButton(onClick = onCancel, testTag = "manual_entry_cancel_button", contentDescription = "إلغاء")
                 },
                 modifier = Modifier.align(Alignment.TopCenter)
             )
