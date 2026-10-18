@@ -105,7 +105,7 @@ jobs:
             -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS")"
           current_fingerprint="$(printf '%s\n' "$keytool_details" \
             | sed -nE 's/^[[:space:]]*SHA[-]?256:[[:space:]]*(.*)$/\1/p' \
-            | head -n 1 | tr -d '[:space:]')"
+            | head -n 1 | tr -d '[:space:]:' | tr '[:upper:]' '[:lower:]')"
           if [ -z "$current_fingerprint" ]; then
             echo "Could not extract SHA-256 fingerprint from keytool output." >&2
             exit 1
@@ -124,7 +124,7 @@ jobs:
             apksigner_details="$("$apksigner" verify --print-certs "$previous_apk")"
             previous_fingerprint="$(printf '%s\n' "$apksigner_details" \
               | sed -nE 's/.*certificate SHA-256 digest:[[:space:]]*(.*)$/\1/p' \
-              | head -n 1 | tr -d '[:space:]')"
+              | head -n 1 | tr -d '[:space:]:' | tr '[:upper:]' '[:lower:]')"
             if [ -z "$previous_fingerprint" ]; then
               echo "Could not extract SHA-256 fingerprint from apksigner output." >&2
               exit 1
