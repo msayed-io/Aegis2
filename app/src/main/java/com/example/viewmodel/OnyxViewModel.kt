@@ -10,6 +10,7 @@ import android.os.PersistableBundle
 import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.crypto.MigrationPayloadDecoder
 import com.example.crypto.TotpGenerator
 import com.example.model.OnyxAccount
 import com.example.security.SecurityPreferences
@@ -34,6 +35,7 @@ sealed class OnyxScreen {
     object Search : OnyxScreen()
     object EmptyState : OnyxScreen()
     object QrScanner : OnyxScreen()
+    object MigrationScanner : OnyxScreen()
     object ManualEntry : OnyxScreen()
     data class EditAccount(val accountId: String) : OnyxScreen()
     object Licenses : OnyxScreen()
@@ -307,6 +309,44 @@ class OnyxViewModel(application: Application) : AndroidViewModel(application) {
         _accounts.value = emptyList()
         accountsStore.save(_accounts.value)
         _currentScreen.value = OnyxScreen.EmptyState
+    }
+
+    // ---- Import from other apps (Google Authenticator migration QR) -------------------------
+
+    /**
+     * Decodes one migration QR (a self-contained batch) off the main thread, merges the accounts
+     * (deduplicated by secret, then id), persists, and returns to Main.
+     * Returns null on success or an error message for the scanner banner.
+     */
+    fun importMigrationUri(raw: String): String? {
+        val result = try {
+            MigrationPayloadDecoder.decode(raw)
+        } catch (e: MigrationPayloadDecoder.DecodeException) {
+            return e.message
+        } catch (e: Exception) {
+            return "تعذّر فك رمز النقل"
+        }
+        if (result.accounts.isEmpty()) return "الرمز لا يحتوي على حسابات TOTP مدعومة"
+
+        viewModelScope.launch {
+            val merged = withContext(Dispatchers.Default) {
+                val existingSecrets = _accounts.value.map { it.secret }.toHashSet()
+                val fresh = result.accounts.filter { it.secret !in existingSecrets }.distinctBy { it.secret }
+                Triple(fresh, (fresh + _accounts.value).distinctBy { it.id }, result.accounts.size - fresh.size)
+            }
+            val (fresh, all, duplicates) = merged
+            _accounts.value = all
+            withContext(Dispatchers.IO) { accountsStore.save(all) }
+            val msg = buildString {
+                append("تم استيراد ${fresh.size} حساب بنجاح")
+                if (duplicates > 0) append(" · تم تخطي $duplicates مكرر")
+                if (result.skipped > 0) append(" · ${result.skipped} غير مدعوم (HOTP)")
+                if (result.batchSize > 1) append(" · رمز ${result.batchIndex + 1} من ${result.batchSize}")
+            }
+            showUserMessage(msg)
+            _currentScreen.value = OnyxScreen.Main
+        }
+        return null
     }
 
     // ---- Vault export / import (.ox) --------------------------------------------------------

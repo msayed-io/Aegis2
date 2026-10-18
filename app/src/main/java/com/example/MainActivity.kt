@@ -36,6 +36,7 @@ import com.example.ui.screens.LicensesScreen
 import com.example.ui.screens.LockScreen
 import com.example.ui.screens.MainScreen
 import com.example.ui.screens.ManualEntryScreen
+import com.example.ui.screens.MigrationScannerScreen
 import com.example.ui.screens.QrScannerScreen
 import com.example.ui.screens.SearchScreen
 import com.example.ui.screens.SettingsScreen
@@ -127,6 +128,7 @@ fun OnyxAppContent(viewModel: OnyxViewModel) {
             is OnyxScreen.CodeDetail,
             is OnyxScreen.Search,
             is OnyxScreen.QrScanner,
+            is OnyxScreen.MigrationScanner,
             is OnyxScreen.ManualEntry,
             is OnyxScreen.EmptyState -> {
                 viewModel.navigateTo(OnyxScreen.Main)
@@ -247,6 +249,13 @@ fun OnyxAppContent(viewModel: OnyxViewModel) {
                     )
                 }
 
+                is OnyxScreen.MigrationScanner -> {
+                    MigrationScannerScreen(
+                        onClose = { viewModel.navigateTo(OnyxScreen.Main) },
+                        onMigrationScanned = { raw -> viewModel.importMigrationUri(raw) }
+                    )
+                }
+
                 is OnyxScreen.ManualEntry -> {
                     ManualEntryScreen(
                         onCancel = { viewModel.navigateTo(OnyxScreen.Main) },
@@ -352,7 +361,8 @@ fun OnyxAppContent(viewModel: OnyxViewModel) {
                     onDismiss = { viewModel.hideAddSheet() },
                     onScanQr = { viewModel.navigateTo(OnyxScreen.QrScanner) },
                     onManualEntry = { viewModel.navigateTo(OnyxScreen.ManualEntry) },
-                    onImportOther = { viewModel.navigateTo(OnyxScreen.BackupSync) }
+                    onImportOther = { viewModel.navigateTo(OnyxScreen.BackupSync) },
+                    onImportFromApps = { viewModel.navigateTo(OnyxScreen.MigrationScanner) }
                 )
             }
         }

@@ -2,6 +2,7 @@ package com.example
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import com.example.crypto.MigrationPayloadDecoder
 import com.example.crypto.OtpAuthParser
 import com.example.crypto.TotpGenerator
 import com.example.model.OnyxAccount
@@ -72,4 +73,22 @@ class OtpAuthParserTest {
         assertEquals(accounts, restored)
         assertThrows(OnyxVault.VaultException::class.java) { OnyxVault.import(bytes, "wrong".toCharArray()) }
     }
+
+  @Test
+  fun `decodes google authenticator migration payload`() {
+    val uri = "otpauth-migration://offline?data=CjUKCkhlbGxvId6tvu8SGEV4YW1wbGU6YWxpY2VAZ29vZ2xlLmNvbRoHRXhhbXBsZSABKAEwAgodCgoxMjM0NTY3ODkwEgNib2IaBEJhbmsgAigCMAIKDgoCeHgSBGhvdHAwATgFEAEYASAAKHs%3D"
+    val result = MigrationPayloadDecoder.decode(uri)
+    assertEquals(2, result.accounts.size)
+    assertEquals(1, result.skipped) // HOTP entry
+    val a = result.accounts[0]
+    assertEquals("Example", a.issuer)
+    assertEquals("alice@google.com", a.accountName)
+    assertEquals("JBSWY3DPEHPK3PXP", a.secret)
+    assertEquals("SHA-1", a.algorithm); assertEquals(6, a.digits)
+    val b = result.accounts[1]
+    assertEquals("Bank", b.issuer); assertEquals("bob", b.accountName)
+    assertEquals("GEZDGNBVGY3TQOJQ", b.secret)
+    assertEquals("SHA-256", b.algorithm); assertEquals(8, b.digits)
+    assertThrows(MigrationPayloadDecoder.DecodeException::class.java) { MigrationPayloadDecoder.decode("otpauth-migration://offline?data=!!") }
+  }
 }

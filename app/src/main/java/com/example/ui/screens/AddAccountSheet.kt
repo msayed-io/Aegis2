@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +59,7 @@ fun AddAccountSheet(
     onScanQr: () -> Unit,
     onManualEntry: () -> Unit,
     onImportOther: () -> Unit,
+    onImportFromApps: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -131,6 +133,22 @@ fun AddAccountSheet(
                     onClick = {
                         onDismiss()
                         onManualEntry()
+                    }
+                )
+
+                HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = Separator,
+                    modifier = Modifier.padding(horizontal = 14.dp)
+                )
+
+                SheetOptionRow(
+                    icon = Icons.Outlined.SwapHoriz,
+                    title = "الاستيراد من تطبيقات أخرى",
+                    testTag = "option_import_from_apps",
+                    onClick = {
+                        onDismiss()
+                        onImportFromApps()
                     }
                 )
 
