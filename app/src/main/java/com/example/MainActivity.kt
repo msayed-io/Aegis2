@@ -1,14 +1,15 @@
 package com.example
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
+import androidx.fragment.app.FragmentActivity
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -20,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.example.security.BiometricAuthenticator
+import com.example.security.findFragmentActivity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.ui.screens.AddAccountSheet
@@ -39,7 +42,20 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.viewmodel.AegisScreen
 import com.example.viewmodel.AegisViewModel
 
-class MainActivity : ComponentActivity() {
+// FragmentActivity is REQUIRED by androidx.biometric.BiometricPrompt.
+class MainActivity : FragmentActivity() {
+    private val viewModel: AegisViewModel by viewModels()
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.onAppForegrounded()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.onAppBackgrounded()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Hide status bar completely - immersive professional experience
@@ -50,7 +66,6 @@ class MainActivity : ComponentActivity() {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
         setContent {
-            val viewModel: AegisViewModel = viewModel()
             MyApplicationTheme {
                 AegisAppContent(viewModel = viewModel)
             }
@@ -92,7 +107,7 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                 viewModel.navigateTo(AegisScreen.Settings)
             }
             is AegisScreen.Lock -> {
-                viewModel.navigateTo(AegisScreen.Main)
+                context.findFragmentActivity()?.moveTaskToBack(true)
             }
             else -> {}
         }
@@ -103,7 +118,7 @@ fun AegisAppContent(viewModel: AegisViewModel) {
             when (val screen = currentScreen) {
                 is AegisScreen.Lock -> {
                     LockScreen(
-                        onUnlock = { viewModel.navigateTo(AegisScreen.Main) }
+                        onUnlocked = { viewModel.unlock() }
                     )
                 }
 
@@ -196,7 +211,23 @@ fun AegisAppContent(viewModel: AegisViewModel) {
                         autoLockOption = autoLockOption,
                         hideCodesWhenLocked = hideCodesWhenLocked,
                         cloudSyncEnabled = cloudSyncEnabled,
-                        onToggleBiometric = { viewModel.toggleBiometric(it) },
+                        onToggleBiometric = { wanted ->
+                            val activity = context.findFragmentActivity()
+                            when {
+                                activity == null -> Unit
+                                !BiometricAuthenticator.isAvailable(activity) -> Toast.makeText(
+                                    context,
+                                    "لا توجد بصمة أو قفل شاشة مسجّل على هذا الجهاز. فعّلهما من إعدادات أندرويد أولاً.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                else -> BiometricAuthenticator.authenticate(
+                                    activity = activity,
+                                    title = if (wanted) "تفعيل القفل البيومتري" else "إيقاف القفل البيومتري",
+                                    subtitle = "تأكيد هويتك لحفظ هذا الإعداد",
+                                    onSuccess = { viewModel.toggleBiometric(wanted) }
+                                )
+                            }
+                        },
                         onAutoLockChange = { viewModel.setAutoLockOption(it) },
                         onToggleHideCodes = { viewModel.toggleHideCodes(it) },
                         onToggleCloudSync = { viewModel.toggleCloudSync(it) },

@@ -1,13 +1,16 @@
 package com.example.viewmodel
 
+import android.app.Application
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.SystemClock
 import android.widget.Toast
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.crypto.TotpGenerator
 import com.example.model.AegisAccount
+import com.example.security.SecurityPreferences
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,14 +33,19 @@ sealed class AegisScreen {
     object AddFirstCode : AegisScreen()
 }
 
-class AegisViewModel : ViewModel() {
+class AegisViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val securityPrefs = SecurityPreferences(application)
 
     private val initialAccounts = listOf<AegisAccount>()
 
     private val _accounts = MutableStateFlow<List<AegisAccount>>(initialAccounts)
     val accounts: StateFlow<List<AegisAccount>> = _accounts.asStateFlow()
 
-    private val _currentScreen = MutableStateFlow<AegisScreen>(AegisScreen.Main)
+    // Start LOCKED whenever biometric protection is enabled (persisted across launches).
+    private val _currentScreen = MutableStateFlow<AegisScreen>(
+        if (securityPrefs.biometricEnabled) AegisScreen.Lock else AegisScreen.Main
+    )
     val currentScreen: StateFlow<AegisScreen> = _currentScreen.asStateFlow()
 
     private val _isAddSheetVisible = MutableStateFlow(false)
@@ -49,18 +57,18 @@ class AegisViewModel : ViewModel() {
     private val _currentTimeSeconds = MutableStateFlow(System.currentTimeMillis() / 1000L)
     val currentTimeSeconds: StateFlow<Long> = _currentTimeSeconds.asStateFlow()
 
-    // Settings - Android Biometric 
-    private val _biometricEnabled = MutableStateFlow(true)
+    // Settings - Android Biometric (persisted)
+    private val _biometricEnabled = MutableStateFlow(securityPrefs.biometricEnabled)
     val biometricEnabled: StateFlow<Boolean> = _biometricEnabled.asStateFlow()
 
 
-    private val _autoLockOption = MutableStateFlow("فوراً")
+    private val _autoLockOption = MutableStateFlow(securityPrefs.autoLockOption)
     val autoLockOption: StateFlow<String> = _autoLockOption.asStateFlow()
 
-    private val _hideCodesWhenLocked = MutableStateFlow(false)
+    private val _hideCodesWhenLocked = MutableStateFlow(securityPrefs.hideCodesWhenLocked)
     val hideCodesWhenLocked: StateFlow<Boolean> = _hideCodesWhenLocked.asStateFlow()
 
-    private val _cloudSyncEnabled = MutableStateFlow(true)
+    private val _cloudSyncEnabled = MutableStateFlow(securityPrefs.cloudSyncEnabled)
     val cloudSyncEnabled: StateFlow<Boolean> = _cloudSyncEnabled.asStateFlow()
 
     private val _copiedCodeId = MutableStateFlow<String?>(null)
@@ -84,20 +92,53 @@ class AegisViewModel : ViewModel() {
     fun setSearchQuery(query: String) { _searchQuery.value = query }
     fun clearSearchQuery() { _searchQuery.value = "" }
 
+    /** Call ONLY after the system BiometricPrompt succeeded; persists the new state. */
     fun toggleBiometric(enabled: Boolean) {
         _biometricEnabled.value = enabled
+        securityPrefs.biometricEnabled = enabled
     }
 
     fun setAutoLockOption(option: String) {
         _autoLockOption.value = option
+        securityPrefs.autoLockOption = option
     }
 
     fun toggleHideCodes(hide: Boolean) {
         _hideCodesWhenLocked.value = hide
+        securityPrefs.hideCodesWhenLocked = hide
     }
 
     fun toggleCloudSync(enabled: Boolean) {
         _cloudSyncEnabled.value = enabled
+        securityPrefs.cloudSyncEnabled = enabled
+    }
+
+    // ---- Lock lifecycle -------------------------------------------------------------------
+
+    private var backgroundedAt: Long = -1L
+
+    fun unlock() {
+        backgroundedAt = -1L
+        _currentScreen.value = AegisScreen.Main
+    }
+
+    fun lock() {
+        if (_biometricEnabled.value) _currentScreen.value = AegisScreen.Lock
+    }
+
+    /** Activity.onStop: remember when we left. */
+    fun onAppBackgrounded() {
+        if (_biometricEnabled.value) backgroundedAt = SystemClock.elapsedRealtime()
+    }
+
+    /** Activity.onStart: re-lock if the configured grace period has elapsed. */
+    fun onAppForegrounded() {
+        if (!_biometricEnabled.value || backgroundedAt < 0L) return
+        val elapsed = SystemClock.elapsedRealtime() - backgroundedAt
+        backgroundedAt = -1L
+        if (elapsed >= SecurityPreferences.autoLockMillis(_autoLockOption.value)) {
+            _currentScreen.value = AegisScreen.Lock
+        }
     }
 
     fun copyCode(context: Context, account: AegisAccount) {

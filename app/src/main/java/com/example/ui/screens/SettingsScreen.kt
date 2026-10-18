@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Fingerprint
@@ -34,9 +33,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.components.AegisEmblem
+import com.example.ui.components.FloatingBottomNavCapsule
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.components.IosSwitch
+import com.example.ui.components.CardShape
 import com.example.ui.theme.*
 
 @Composable
@@ -65,13 +66,13 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 96.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 96.dp, bottom = 120.dp, start = 16.dp, end = 16.dp)
             ) {
                 // Profile Banner Card - Android Professional
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -135,7 +136,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     Row(
                         modifier = Modifier
@@ -222,7 +223,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     Row(
                         modifier = Modifier
@@ -298,7 +299,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     Row(
                         modifier = Modifier
@@ -317,7 +318,7 @@ fun SettingsScreen(
                             Box(
                                 modifier = Modifier
                                     .size(26.dp)
-                                    .background(TertiarySystemBackground, RoundedCornerShape(percent = 50)),
+                                    .background(TertiarySystemBackground, RoundedCornerShape(8.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 AegisEmblem(size = 15.dp, tint = SystemBlue, strokeWidth = 1.6f)
@@ -334,7 +335,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     Row(
                         modifier = Modifier
@@ -373,7 +374,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     Row(
                         modifier = Modifier
@@ -442,36 +443,18 @@ fun SettingsScreen(
 
             TopVignetteOverlay()
 
+            // Title lives in its own capsule on the leading (right) edge; navigation is via the bottom bar.
             FloatingHeaderCapsule(
                 title = "الإعدادات",
-                leadingIcon = {
-                    Row(
-                        modifier = Modifier
-                            .testTag("settings_back_button")
-                            .clickable { onBack() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                            contentDescription = "رجوع",
-                            tint = SystemBlue,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                },
-                trailingIcon = {
-                    Text(
-                        text = "تم",
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = SystemBlue,
-                        modifier = Modifier
-                            .testTag("settings_done_button")
-                            .clickable { onBack() }
-                    )
-                },
                 modifier = Modifier.align(Alignment.TopCenter)
+            )
+
+            FloatingBottomNavCapsule(
+                currentTab = 2,
+                onAuthClick = onBack,
+                onScanClick = {},
+                onSettingsClick = {},
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
     }

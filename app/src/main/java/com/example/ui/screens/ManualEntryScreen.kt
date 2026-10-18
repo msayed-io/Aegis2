@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
+import com.example.ui.components.CardShape
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
@@ -116,7 +117,7 @@ fun ManualEntryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     // Issuer Row
                     Row(
@@ -247,7 +248,7 @@ fun ManualEntryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     // Type Row
                     Row(

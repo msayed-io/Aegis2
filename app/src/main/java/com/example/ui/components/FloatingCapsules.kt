@@ -32,6 +32,14 @@ import com.example.ui.theme.SystemBlue
 
 private val CapsuleShape = RoundedCornerShape(percent = 50)
 
+/** Unified card shape: smooth 24dp corners on all four sides (never a pill). */
+val CardShape = RoundedCornerShape(24.dp)
+
+/**
+ * Header made of a leading (start/right in RTL) capsule that carries the screen TITLE
+ * together with an optional back/cancel icon, plus an optional trailing action capsule.
+ * The title is never floated in the middle of the screen.
+ */
 @Composable
 fun FloatingHeaderCapsule(
     title: String,
@@ -40,38 +48,41 @@ fun FloatingHeaderCapsule(
     modifier: Modifier = Modifier
 ) {
     FloatingHeaderFrame(modifier = modifier) {
-        if (leadingIcon != null) {
-            FloatingCapsuleSurface(
-                modifier = Modifier.align(Alignment.CenterStart)
+        FloatingCapsuleSurface(modifier = Modifier.align(Alignment.CenterStart)) {
+            Row(
+                modifier = Modifier
+                    .height(48.dp)
+                    .padding(start = if (leadingIcon != null) 12.dp else 18.dp, end = 18.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    leadingIcon()
+                if (leadingIcon != null) {
+                    Box(
+                        modifier = Modifier.size(28.dp),
+                        contentAlignment = Alignment.Center
+                    ) { leadingIcon() }
+                    Spacer(modifier = Modifier.width(6.dp))
                 }
+                Text(
+                    text = title,
+                    fontFamily = InterFontFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = Label,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 200.dp)
+                )
             }
         }
 
         if (trailingIcon != null) {
-            FloatingCapsuleSurface(
-                modifier = Modifier.align(Alignment.CenterEnd)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    trailingIcon()
-                }
+            FloatingCapsuleSurface(modifier = Modifier.align(Alignment.CenterEnd)) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) { trailingIcon() }
             }
         }
-
-        Text(
-            text = title,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 64.dp),
-            fontFamily = InterFontFamily,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 17.sp,
-            color = Label,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 

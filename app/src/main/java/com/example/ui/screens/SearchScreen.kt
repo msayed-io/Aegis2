@@ -31,6 +31,7 @@ import com.example.model.AegisAccount
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
+import com.example.ui.components.CardShape
 import com.example.ui.theme.*
 
 @Composable
@@ -152,7 +153,7 @@ fun SearchScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                            .background(SecondarySystemBackground, CardShape)
                     ) {
                         if (filtered.isEmpty()) {
                             Box(

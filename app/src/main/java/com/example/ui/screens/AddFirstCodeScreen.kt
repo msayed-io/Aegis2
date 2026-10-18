@@ -39,6 +39,7 @@ import com.example.ui.components.AegisEmblem
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingCapsuleHeader
 import com.example.ui.components.TopVignetteOverlay
+import com.example.ui.components.CardShape
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
@@ -97,7 +98,7 @@ fun AddFirstCodeScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                            .background(SecondarySystemBackground, CardShape)
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically

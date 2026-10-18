@@ -35,6 +35,7 @@ import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingBottomNavCapsule
 import com.example.ui.components.FloatingCapsuleHeader
 import com.example.ui.components.TopVignetteOverlay
+import com.example.ui.components.CardShape
 import com.example.ui.theme.*
 
 @Composable
@@ -119,7 +120,7 @@ fun MainScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                                .background(SecondarySystemBackground, CardShape)
                         ) {
                             accounts.forEachIndexed { index, account ->
                                 val code = TotpGenerator.generateTotp(

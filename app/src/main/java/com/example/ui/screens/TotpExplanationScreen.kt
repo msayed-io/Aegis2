@@ -43,6 +43,7 @@ import com.example.ui.components.AegisEmblem
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
+import com.example.ui.components.CardShape
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
@@ -83,7 +84,7 @@ fun TotpExplanationScreen(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50)),
+                        .background(SecondarySystemBackground, CardShape),
                     contentAlignment = Alignment.Center
                 ) {
                     AegisEmblem(size = 32.dp, tint = SystemBlue, strokeWidth = 2.5f)
@@ -116,7 +117,7 @@ fun TotpExplanationScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                        .background(SecondarySystemBackground, CardShape)
                 ) {
                     // Module 1: Shared Key
                     Row(

@@ -31,6 +31,7 @@ import com.example.model.AegisAccount
 import com.example.ui.components.CountdownRing
 import com.example.ui.components.FloatingHeaderCapsule
 import com.example.ui.components.TopVignetteOverlay
+import com.example.ui.components.CardShape
 import com.example.ui.theme.*
 
 @Composable
@@ -226,7 +227,7 @@ fun CodeDetailScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SecondarySystemBackground, RoundedCornerShape(percent = 50))
+                            .background(SecondarySystemBackground, CardShape)
                     ) {
                         DetailRow(label = "النوع", value = "TOTP · ${account.algorithm}", isCode = true)
                         HorizontalDivider(thickness = 0.5.dp, color = Separator, modifier = Modifier.padding(horizontal = 16.dp))

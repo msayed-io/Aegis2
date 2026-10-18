@@ -27,12 +27,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.security.BiometricAuthenticator
+import com.example.security.findFragmentActivity
 import com.example.ui.components.AegisEmblem
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.Label
@@ -48,17 +55,43 @@ import com.example.ui.theme.SecondarySystemBackground
 import com.example.ui.theme.SystemBackground
 import com.example.ui.theme.SystemBlue
 import com.example.ui.theme.SystemGreen
-import kotlinx.coroutines.delay
+import com.example.ui.theme.SystemRed
 import kotlinx.coroutines.launch
 
 @Composable
 fun LockScreen(
-    onUnlock: () -> Unit,
+    onUnlocked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
     val buttonScale = remember { Animatable(1f) }
     val emblemScale = remember { Animatable(1f) }
+    val context = LocalContext.current
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Launches the NATIVE Android biometric sheet; unlock happens only on system success.
+    val requestUnlock: () -> Unit = {
+        val activity = context.findFragmentActivity()
+        if (activity != null) {
+            errorMessage = null
+            BiometricAuthenticator.authenticate(
+                activity = activity,
+                title = "فتح Onyx",
+                subtitle = "استخدم بصمة الإصبع أو الوجه أو رمز الجهاز",
+                onSuccess = {
+                    scope.launch {
+                        emblemScale.animateTo(1.12f, tween(200))
+                        emblemScale.animateTo(1f, tween(150))
+                        onUnlocked()
+                    }
+                },
+                onFailure = { msg -> errorMessage = msg }
+            )
+        }
+    }
+
+    // Prompt immediately when the lock screen appears.
+    LaunchedEffect(Unit) { requestUnlock() }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(
@@ -138,11 +171,8 @@ fun LockScreen(
                         scope.launch {
                             buttonScale.animateTo(0.96f, tween(100))
                             buttonScale.animateTo(1f, tween(150))
-                            emblemScale.animateTo(1.12f, tween(200))
-                            emblemScale.animateTo(1f, tween(150))
-                            delay(100)
-                            onUnlock()
                         }
+                        requestUnlock()
                     },
                     modifier = Modifier
                         .testTag("biometric_unlock_button")
@@ -192,10 +222,21 @@ fun LockScreen(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            onUnlock()
+                            requestUnlock()
                         }
                         .padding(8.dp)
                 )
+
+                errorMessage?.let { msg ->
+                    Text(
+                        text = msg,
+                        fontFamily = InterFontFamily,
+                        fontSize = 12.sp,
+                        color = SystemRed,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

@@ -28,6 +28,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -73,6 +79,7 @@ fun AddAccountSheet(
         },
         modifier = modifier
     ) {
+        HideStatusBarInDialogWindow()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -222,5 +229,19 @@ private fun SheetOptionRow(
             tint = TertiaryLabel,
             modifier = Modifier.size(20.dp)
         )
+    }
+}
+
+/** The sheet is hosted in a separate Dialog window; mirror the Activity's hidden status bar there. */
+@Composable
+private fun HideStatusBarInDialogWindow() {
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.parent as? DialogWindowProvider)?.window ?: return@SideEffect
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.statusBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
     }
 }
