@@ -29,7 +29,7 @@ val Separator = Color(0x99545458)          // rgba(84, 84, 88, 0.60)
 val OpaqueSeparator = Color(0xFF38383A)
 
 // Semantic Accents
-val SystemBlue = Color(0xFF0A84FF)         // Aegis primary action accent
+val SystemBlue = Color(0xFF0A84FF)         // Onyx primary action accent
 val SystemGreen = Color(0xFF30D158)        // Success and toggle enabled
 val SystemOrange = Color(0xFFFF9F0A)       // Countdown warning under 5s only
 val SystemRed = Color(0xFFFF453A)          // Expired / destructive error only

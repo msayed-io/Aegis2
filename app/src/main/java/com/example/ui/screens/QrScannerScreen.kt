@@ -94,7 +94,7 @@ fun QrScannerScreen(
             val engine = remember {
                 QrScannerEngine(lifecycleOwner, PreviewView(context)) { rawBarcode ->
                     // Parse otpauth:// if present or pass raw
-                    var issuer = "Aegis"
+                    var issuer = "Onyx"
                     var account = "User"
                     var secret = rawBarcode
 
@@ -102,7 +102,7 @@ fun QrScannerScreen(
                         try {
                             val uri = android.net.Uri.parse(rawBarcode)
                             secret = uri.getQueryParameter("secret") ?: rawBarcode
-                            issuer = uri.getQueryParameter("issuer") ?: "Aegis"
+                            issuer = uri.getQueryParameter("issuer") ?: "Onyx"
                             val path = uri.path?.removePrefix("/") ?: ""
                             account = if (path.contains(":")) path.substringAfter(":") else path
                         } catch (_: Exception) {}
@@ -235,7 +235,7 @@ fun QrScannerScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "يقرأ Aegis رموز ",
+                            text = "يقرأ Onyx رموز ",
                             fontFamily = InterFontFamily,
                             fontSize = 12.sp,
                             color = SecondaryLabel

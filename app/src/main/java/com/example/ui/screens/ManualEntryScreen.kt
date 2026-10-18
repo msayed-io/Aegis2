@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,10 +47,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.FloatingHeaderCapsule
+import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
-import com.example.ui.theme.DarkToolbarSurface
 import com.example.ui.theme.SecondaryLabel
 import com.example.ui.theme.SecondarySystemBackground
 import com.example.ui.theme.Separator
@@ -76,80 +75,35 @@ fun ManualEntryScreen(
     var period by remember { mutableIntStateOf(30) }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .background(SystemBackground)
-                .statusBarsPadding()
-                .navigationBarsPadding()
         ) {
-            // Solid dark navigation bar
-            Row(
+            // Scrollable Content - padded to avoid overlapping floating capsules
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .background(DarkToolbarSurface)
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 76.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
-                // Right (RTL start): Cancel
-                Row(
-                    modifier = Modifier
-                        .testTag("manual_entry_cancel_button")
-                        .clickable { onCancel() }
-                        .padding(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = SystemBlue,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Text(
-                        text = "إلغاء",
-                        fontFamily = InterFontFamily,
-                        fontSize = 17.sp,
-                        color = SystemBlue
-                    )
-                }
-
-                // Title
+                // Large Title Header (like BackupSync & Settings)
                 Text(
                     text = "حساب جديد",
                     fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp,
-                    color = Label
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    color = Label,
+                    letterSpacing = (-0.5).sp
                 )
-
-                // Left (RTL end): Add
                 Text(
-                    text = "إضافة",
+                    text = "أدخل بيانات حسابك يدوياً",
                     fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp,
-                    color = SystemBlue,
-                    modifier = Modifier
-                        .testTag("manual_entry_top_save_button")
-                        .clickable {
-                            onSave(issuer, accountName, secretKey, algorithm, digits, period)
-                        }
-                        .padding(4.dp)
+                    fontSize = 15.sp,
+                    color = SecondaryLabel,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
                 )
-            }
 
-            HorizontalDivider(thickness = 0.5.dp, color = Separator)
-
-            // Form Content
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
                 // Section 1: بيانات الحساب
                 Text(
                     text = "بيانات الحساب",
@@ -168,7 +122,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -201,7 +155,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -236,7 +190,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -299,7 +253,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -314,7 +268,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .clickable {
                                 algorithm = when (algorithm) {
                                     "SHA-1" -> "SHA-256"
@@ -339,7 +293,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .clickable { digits = if (digits == 6) 8 else 6 }
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -355,7 +309,7 @@ fun ManualEntryScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(52.dp)
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -365,7 +319,7 @@ fun ManualEntryScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = "يتم تشفير وتخزين المفتاح محلياً على هذا الجهاز باستخدام تقنية الحماية الآمنة.",
@@ -379,14 +333,8 @@ fun ManualEntryScreen(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // Bottom CTA Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            ) {
+                // Bottom CTA Button - inside scroll for consistency with other capsule screens
                 Button(
                     onClick = {
                         onSave(issuer, accountName, secretKey, algorithm, digits, period)
@@ -410,7 +358,56 @@ fun ManualEntryScreen(
                         color = Label
                     )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
+
+            // Top Vignette Overlay for smooth scrolling behind floating header
+            TopVignetteOverlay()
+
+            // Floating Top Header Capsule - NEW CAPSULE SYSTEM
+            FloatingHeaderCapsule(
+                title = "حساب جديد",
+                leadingIcon = {
+                    Row(
+                        modifier = Modifier
+                            .testTag("manual_entry_cancel_button")
+                            .clickable { onCancel() }
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = SystemBlue,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = "إلغاء",
+                            fontFamily = InterFontFamily,
+                            fontSize = 16.sp,
+                            color = SystemBlue
+                        )
+                    }
+                },
+                trailingIcon = {
+                    Text(
+                        text = "إضافة",
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = SystemBlue,
+                        modifier = Modifier
+                            .testTag("manual_entry_top_save_button")
+                            .clickable {
+                                onSave(issuer, accountName, secretKey, algorithm, digits, period)
+                            }
+                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                },
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }

@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,7 +20,6 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -40,12 +37,13 @@ import androidx.compose.ui.unit.sp
 import com.example.crypto.TotpGenerator
 import com.example.ui.components.AegisEmblem
 import com.example.ui.components.CountdownRing
+import com.example.ui.components.FloatingCapsuleHeader
+import com.example.ui.components.TopVignetteOverlay
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.JetBrainsMonoFontFamily
 import com.example.ui.theme.Label
 import com.example.ui.theme.SecondaryLabel
 import com.example.ui.theme.SecondarySystemBackground
-import com.example.ui.theme.Separator
 import com.example.ui.theme.SystemBackground
 import com.example.ui.theme.SystemBlue
 import com.example.ui.theme.TertiarySystemBackground
@@ -61,205 +59,211 @@ fun AddFirstCodeScreen(
     val remainingSeconds = TotpGenerator.getRemainingSeconds(30, currentTimeSeconds)
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .background(SystemBackground)
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Minimal top bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    AegisEmblem(size = 24.dp, tint = SystemBlue, strokeWidth = 3f)
-                    Text(
-                        text = "Aegis",
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Label
-                    )
-                }
-
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.testTag("add_first_code_settings")
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Settings,
-                        contentDescription = "الإعدادات",
-                        tint = SecondaryLabel,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-
-            HorizontalDivider(thickness = 0.5.dp, color = Separator)
-
-            // Central Area
+            // Main Content
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                    .fillMaxSize()
+                    .padding(top = 96.dp, bottom = 32.dp, start = 20.dp, end = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "أضف رمزك الأول",
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    color = Label,
-                    letterSpacing = (-0.5).sp
-                )
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // Apple Account TOTP Card Preview (Elevated 1: SecondarySystemBackground)
-                Row(
+                // Central Area
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(SecondarySystemBackground, RoundedCornerShape(16.dp))
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f)
                 ) {
-                    // Right in RTL: Avatar + Details
+                    Text(
+                        text = "أضف رمزك الأول",
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        color = Label,
+                        letterSpacing = (-0.5).sp
+                    )
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    // Apple Account TOTP Card Preview (Elevated 1: SecondarySystemBackground)
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f, fill = false)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SecondarySystemBackground, RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(TertiarySystemBackground, RoundedCornerShape(10.dp)),
-                            contentAlignment = Alignment.Center
+                        // Right in RTL: Avatar + Details
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f, fill = false)
                         ) {
-                            Text(
-                                text = "A",
-                                fontFamily = InterFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 17.sp,
-                                color = Label
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column {
-                            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(TertiarySystemBackground, RoundedCornerShape(10.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
-                                    text = "Apple",
+                                    text = "A",
                                     fontFamily = InterFontFamily,
-                                    fontWeight = FontWeight.SemiBold,
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 17.sp,
                                     color = Label
                                 )
-                                Text(
-                                    text = "يتجدد خلال $remainingSeconds ثانية",
-                                    fontFamily = InterFontFamily,
-                                    fontSize = 13.sp,
-                                    color = SecondaryLabel
-                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column {
+                                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                                    Text(
+                                        text = "Apple",
+                                        fontFamily = InterFontFamily,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 17.sp,
+                                        color = Label
+                                    )
+                                    Text(
+                                        text = "يتجدد خلال $remainingSeconds ثانية",
+                                        fontFamily = InterFontFamily,
+                                        fontSize = 13.sp,
+                                        color = SecondaryLabel
+                                    )
+                                }
                             }
                         }
+
+                        // Left in RTL: Code, Countdown Ring, Copy
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                                Text(
+                                    text = "482 · 913",
+                                    fontFamily = JetBrainsMonoFontFamily,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 18.sp,
+                                    color = Label
+                                )
+                            }
+
+                            CountdownRing(
+                                remainingSeconds = remainingSeconds,
+                                period = 30,
+                                size = 32.dp,
+                                strokeWidth = 2.5.dp
+                            )
+
+                            Icon(
+                                imageVector = Icons.Outlined.ContentCopy,
+                                contentDescription = null,
+                                tint = SecondaryLabel,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Bottom Actions
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Button(
+                        onClick = onAddFirst,
+                        modifier = Modifier
+                            .testTag("add_first_code_primary_button")
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(25.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = SystemBlue,
+                            contentColor = Label
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                    ) {
+                        Text(
+                            text = "أضف حسابك الأول",
+                            fontFamily = InterFontFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 17.sp,
+                            color = Label
+                        )
                     }
 
-                    // Left in RTL: Code, Countdown Ring, Copy
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "سأفعل ذلك لاحقًا",
+                        fontFamily = InterFontFamily,
+                        fontSize = 15.sp,
+                        color = SystemBlue,
+                        modifier = Modifier
+                            .testTag("add_first_code_later_button")
+                            .clickable { onDoLater() }
+                            .padding(6.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .width(136.dp)
+                            .height(5.dp)
+                            .background(Color.White.copy(alpha = 0.35f), CircleShape)
+                    )
+                }
+            }
+
+            // Top Vignette Overlay
+            TopVignetteOverlay()
+
+            // NEW CAPSULE SYSTEM - Two floating capsules like MainScreen
+            FloatingCapsuleHeader(
+                startContent = {
                     Row(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                            Text(
-                                text = "482 · 913",
-                                fontFamily = JetBrainsMonoFontFamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 18.sp,
-                                color = Label
-                            )
-                        }
-
-                        CountdownRing(
-                            remainingSeconds = remainingSeconds,
-                            period = 30,
-                            size = 32.dp,
-                            strokeWidth = 2.5.dp
-                        )
-
-                        Icon(
-                            imageVector = Icons.Outlined.ContentCopy,
-                            contentDescription = null,
-                            tint = SecondaryLabel,
-                            modifier = Modifier.size(18.dp)
+                        AegisEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
+                        Text(
+                            text = "Onyx",
+                            fontFamily = InterFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Label
                         )
                     }
-                }
-            }
-
-            // Bottom Actions
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Button(
-                    onClick = onAddFirst,
-                    modifier = Modifier
-                        .testTag("add_first_code_primary_button")
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SystemBlue,
-                        contentColor = Label
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(0.dp)
-                ) {
-                    Text(
-                        text = "أضف حسابك الأول",
-                        fontFamily = InterFontFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp,
-                        color = Label
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "سأفعل ذلك لاحقًا",
-                    fontFamily = InterFontFamily,
-                    fontSize = 15.sp,
-                    color = SystemBlue,
-                    modifier = Modifier
-                        .testTag("add_first_code_later_button")
-                        .clickable { onDoLater() }
-                        .padding(6.dp)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Box(
-                    modifier = Modifier
-                        .width(136.dp)
-                        .height(5.dp)
-                        .background(Color.White.copy(alpha = 0.35f), CircleShape)
-                )
-            }
+                },
+                endContent = {
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier.testTag("add_first_code_settings")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "الإعدادات",
+                            tint = SecondaryLabel,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                },
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }

@@ -147,7 +147,7 @@ fun BackupSyncScreen(
                             .testTag("backup_export_vault_btn")
                             .fillMaxWidth()
                             .clickable {
-                                Toast.makeText(context, "تم تصدير ملف Aegis Vault (.aegis) بنجاح", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم تصدير ملف Onyx Vault (.onyx) بنجاح", Toast.LENGTH_SHORT).show()
                             }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -165,7 +165,7 @@ fun BackupSyncScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(text = "تصدير خزنة مشفرة", fontFamily = InterFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Label)
-                                Text(text = "حفظ ملف بتنسيق Aegis محمي بكلمة مرور", fontFamily = InterFontFamily, fontSize = 13.sp, color = SecondaryLabel)
+                                Text(text = "حفظ ملف بتنسيق Onyx محمي بكلمة مرور", fontFamily = InterFontFamily, fontSize = 13.sp, color = SecondaryLabel)
                             }
                         }
                         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, null, tint = TertiaryLabel, modifier = Modifier.size(18.dp))
@@ -260,7 +260,7 @@ fun BackupSyncScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "يتم تشفير جميع النسخ الاحتياطية باستخدام مفتاح Secure Enclave قبل مغادرة الجهاز. لا يمكن لأحد قراءة رموزك بما في ذلك Apple أو Aegis.",
+                        text = "يتم تشفير جميع النسخ الاحتياطية باستخدام مفتاح Secure Enclave قبل مغادرة الجهاز. لا يمكن لأحد قراءة رموزك بما في ذلك Apple أو Onyx.",
                         fontFamily = InterFontFamily,
                         fontSize = 13.sp,
                         color = SecondaryLabel,

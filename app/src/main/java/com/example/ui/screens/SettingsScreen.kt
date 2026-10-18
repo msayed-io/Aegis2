@@ -113,7 +113,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Aegis لـ iPhone · متصل بـ iCloud",
+                                text = "Onyx لـ iPhone · متصل بـ iCloud",
                                 fontFamily = InterFontFamily,
                                 fontSize = 12.sp,
                                 color = SecondaryLabel
@@ -263,7 +263,7 @@ fun SettingsScreen(
                             Text(text = "تصدير مشفر", fontFamily = InterFontFamily, fontSize = 16.sp, color = Label)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "Aegis Vault (.aegis)", fontFamily = InterFontFamily, fontSize = 14.sp, color = SecondaryLabel)
+                            Text(text = "Onyx Vault (.onyx)", fontFamily = InterFontFamily, fontSize = 14.sp, color = SecondaryLabel)
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, null, tint = TertiaryLabel, modifier = Modifier.size(16.dp))
                         }
@@ -422,7 +422,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Aegis Authenticator © 2025",
+                        text = "Onyx Authenticator © 2025",
                         fontFamily = InterFontFamily,
                         fontSize = 11.sp,
                         color = TertiaryLabel

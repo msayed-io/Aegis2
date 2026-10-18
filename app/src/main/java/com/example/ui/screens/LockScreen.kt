@@ -108,7 +108,7 @@ fun LockScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Aegis",
+                    text = "Onyx",
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 32.sp,

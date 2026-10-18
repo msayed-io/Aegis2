@@ -170,7 +170,7 @@ fun EmptyStateScreen(
                     ) {
                         AegisEmblem(size = 20.dp, tint = SystemBlue, strokeWidth = 3f)
                         Text(
-                            text = "Aegis",
+                            text = "Onyx",
                             fontFamily = InterFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
